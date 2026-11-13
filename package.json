@@ -1,0 +1,13 @@
+{
+  "name": "clinic-system",
+  "private": true,
+  "scripts": {
+    "rules": "node scripts/gen-rules.mjs",
+    "sync": "cp shared/modules.js web/src/config/modules.js && cp shared/modules.js mobile/src/config/modules.js && node scripts/gen-rules.mjs",
+    "deploy:rules": "npm run rules && firebase deploy --only firestore:rules,firestore:indexes,storage",
+    "deploy:web": "cd web && npm run build && cd .. && firebase deploy --only hosting"
+  },
+  "devDependencies": {
+    "firebase-admin": "^14.5.1"
+  }
+}

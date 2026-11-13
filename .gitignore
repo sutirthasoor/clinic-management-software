@@ -1,0 +1,15 @@
+node_modules
+dist
+.expo
+.env
+# Google Cloud credentials
+scripts/serviceAccountKey.json
+*serviceAccountKey.json
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/

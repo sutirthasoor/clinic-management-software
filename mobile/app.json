@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "ClinicCare",
+    "slug": "cliniccare",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cliniccare.app"
+    },
+    "android": {
+      "package": "com.cliniccare.app",
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
+    },
+    "plugins": [
+      "expo-notifications",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Unlock ClinicCare with Face ID"
+        }
+      ],
+      "expo-sharing",
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4d6c69e0-f6e0-49e4-aeb1-a46aa15af4aa"
+      }
+    }
+  }
+}
