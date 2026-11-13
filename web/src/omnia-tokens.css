@@ -1,0 +1,744 @@
+:root {
+  /* ── Palette ──────────────────────────────────────────────────────────────
+     ENTERPRISE NEUTRAL RAMP.
+     The neutrals used to be tinted: the page sat on a pink-tinted #f8f1f2, the
+     "white" surface was #fbfafb, and both text tokens were green-blacks
+     (#1f2a24 / #4c544f) inherited from an earlier sage palette. Mixed against
+     the navy brand that reads as visual noise rather than one product, and it
+     is the main reason the CRM did not feel like enterprise software.
+     These are now a single neutral grey ramp. Nothing else had to change:
+     the role tokens below alias these, so every existing reference (~2,400
+     across app/ and components/) picks the new ramp up centrally rather than
+     being edited per component.
+     Brand is unchanged — navy #1e3a5f / hover #2a4f80 / lime #d3f293 were
+     already the intended brand colours.
+     Every pair here is measured by scripts/contrast-audit.ts in both themes. */
+  --white: #ffffff;      /* surface */
+  --off-white: #f8f9fa;  /* page background */
+  --dark-teal: #1e3a5f;  /* brand navy */
+  --deep-green: #2a4f80; /* brand navy, hover */
+  --sage-green: #92a68d;
+  --muted-olive: #a5b89d;
+  --light-sage: #beccad;
+  --soft-sage: #cfd8cd;
+  --pale-sage: #f5f6f8;
+  --coral: #fb7d60;
+  --light-coral: #ff9a84;
+  --coral-tint: #fff4f1;
+  --sky-tint: #cfe2f3;
+  --sky-strong: #a8c9e8;
+  --coral-pastel: #ffd9cd;
+  --pastel-yellow: #fbea8c;
+  --warm-yellow: #f4c96b;
+  --pastel-pink: #fcd7fa;
+  /* Primary text. Was #1f2a24, a green-black from the sage palette. Neutral
+     slate at 14.7:1 on the surface — same role, no colour cast. */
+  --charcoal: #1f2937;
+  /* Darkened from #6f7a73, which measured 3.79-4.28:1 against the four surfaces
+     it renders on and so failed AA on every one. #4c544f holds the same
+     green-grey hue and clears 4.5:1 on all of them. This token backs
+     --text-muted, i.e. most labels and table headers in the app. */
+  /* Secondary text. Neutral grey rather than the previous green-grey #4c544f.
+     This token backs --text-muted, i.e. most labels and table headers, and it
+     has to clear 4.5:1 on all four surfaces — page, card, elevated and subtle —
+     which is why --light-gray and --pale-sage below stay light. */
+  --muted-gray: #667085;
+  /* Restored to the original value. This backs --border-subtle AND border-border
+     AND (indirectly) every table gridline via --table-grid - one token, three
+     jobs. It was pushed to #bac5d4 to fix table-row visibility, which also
+     darkened every card outline and divider app-wide. Table strength now comes
+     from its own --table-grid / --table-header-* tokens below instead, so this
+     stays a light, decorative divider colour. */
+  --soft-gray: #e5e7eb;
+  /* Elevated surface (buttons, chips, wells) and subtle surface. Both were
+     green-tinted (#f6f7f4 / #e9eee6); now neutral, and deliberately light so
+     --muted-gray still clears AA on them. */
+  --light-gray: #f3f4f6;
+  --mint-green: #8bc48a;
+  /* Was #e56b5d: 2.95:1 as badge text and 3.06:1 as a solid button under white
+     text. Same red hue, dark enough for both roles. */
+  --soft-red: #b45348;
+  --lime-green: #d3f293;
+  --surface: var(--white);
+  --card-border: transparent;
+  --sidebar-bg: #1e3a5f;
+  --sidebar-deep: #0f1f38;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  /* Was #01a330: 3.04:1 on --success-bg. Same green hue, one step darker. */
+  --success: #018224;
+  --success-bg: #eaf8ea;
+  --chart-green: #42be6e;
+  --chart-blue: #10508a;
+  --save-teal: #204d4c;
+  --save-teal-fg: #ffffff;
+
+  /* Pipeline wave colors */
+  --pipe-blue-1: #c1def9;
+  --pipe-blue-2: #bad6f8;
+  --pipe-navy-1: #11638e;
+  --pipe-navy-2: #134f8d;
+  --pipe-teal-1: #a1efc5;
+  --pipe-teal-2: #a0e4d4;
+  --pipe-lime-1: #cef592;
+  --pipe-lime-2: #b6eaa1;
+}
+
+/* .dark-navy {
+  -- Navy / Slate dark (commented out - kept for future use) --
+  --white: #f1f5f9;
+  --off-white: #0f172a;
+  --surface: #1e293b;
+  --dark-teal: #60a5fa;
+  --deep-green: #3b82f6;
+  --sage-green: #64748b;
+  --muted-olive: #475569;
+  --light-sage: #334155;
+  --soft-sage: #1e293b;
+  --pale-sage: #172032;
+  --coral: #fb7d60;
+  --light-coral: #ff9a84;
+  --coral-tint: #3a1c1c;
+  --sky-tint: #16263a;
+  --sky-strong: #20384f;
+  --coral-pastel: #4a2a22;
+  --pastel-yellow: #fef08a;
+  --warm-yellow: #fbbf24;
+  --pastel-pink: #f9a8d4;
+  --charcoal: #f1f5f9;
+  --muted-gray: #94a3b8;
+  --soft-gray: rgba(148, 163, 184, 0.15);
+  --light-gray: #162032;
+  --mint-green: #4ade80;
+  --soft-red: #f87171;
+  --lime-green: #bef264;
+  --success: #22c55e;
+  --success-bg: #052e16;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --sidebar-bg: #1c3762;
+  --save-teal: #2d7270;
+  --save-teal-fg: #ffffff;
+  --black: #0f172a;
+  --off-black: #1e293b;
+  --overlay-scrim: rgba(0, 0, 0, 0.6);
+  --overlay-scrim-strong: rgba(0, 0, 0, 0.75);
+} */
+
+.dark {
+  /* ── Pure Dark (charcoal/black) ── */
+  --white: #fafafa;
+  --off-white: #09090b;
+  --surface: #18181b;
+  /* These back --brand / --brand-soft. They used to be neutral greys (#71717a /
+     #52525b), so every brand fill in dark mode lost the navy identity the
+     sidebar establishes. Same hue as the light navy, lifted enough to read on a
+     dark canvas while still carrying white text at AA. */
+  --dark-teal: #2d5f9e;
+  --deep-green: #3a6fb0;
+  --sage-green: #71717a;
+  --muted-olive: #52525b;
+  --light-sage: #3f3f46;
+  --soft-sage: #27272a;
+  --pale-sage: #1c1c1e;
+  --coral: #fb7d60;
+  --light-coral: #ff9a84;
+  --coral-tint: #3a1212;
+  --sky-tint: #0e2034;
+  --sky-strong: #163049;
+  --coral-pastel: #43201a;
+  --pastel-yellow: #fef08a;
+  --warm-yellow: #fbbf24;
+  --pastel-pink: #f9a8d4;
+  --charcoal: #fafafa;
+  --muted-gray: #a1a1aa;
+  /* Was 0.07 alpha -> 1.22:1 against a card. Same treatment as light mode: raise
+     it until table row separators actually register. */
+  --soft-gray: rgba(255, 255, 255, 0.16);
+  --light-gray: #1c1c1e;
+  --mint-green: #4ade80;
+  --soft-red: #f87171;
+  --lime-green: #bef264;
+  --success: #22c55e;
+  --success-bg: #031a0d;
+  --card-border: rgba(255, 255, 255, 0.05);
+  --save-teal: #265c5a;
+  --save-teal-fg: #ffffff;
+  --off-white: #111318;
+  --surface: #1a1d23;
+  --black: #111318;
+  --off-black: #1a1d23;
+  --sidebar-bg: #13161e;
+  --sidebar-deep: #0d1117;
+  --sidebar-border: rgba(255, 255, 255, 0.18);
+  --overlay-scrim: rgba(0, 0, 0, 0.7);
+  --overlay-scrim-strong: rgba(0, 0, 0, 0.85);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ROLE TOKENS - the only tokens pages should reference.
+   These alias the palette tokens above so light mode stays byte-identical to
+   the canonical dashboard. Dark / pure-dark adapt automatically because the
+   underlying palette tokens are redefined in .dark and .pure-dark.
+   ───────────────────────────────────────────────────────────────────────────── */
+:root,
+.dark,
+.pure-dark {
+  /* Surfaces */
+  --bg-app: var(--off-white);          /* page background */
+  --bg-surface: var(--surface);        /* card / panel background */
+  --bg-elevated: var(--light-gray);    /* buttons, chips, subtle wells */
+  --bg-subtle: var(--pale-sage);       /* accented surfaces (activity, badges) */
+
+  /* Text */
+  --text-strong: var(--charcoal);      /* headings, primary text */
+  --text-muted: var(--muted-gray);     /* secondary text, labels */
+  --text-inverse: var(--white);        /* text on brand fills */
+  /* Placeholder text ONLY. Split out from --text-muted because that token backs
+     labels/secondary text and was deliberately darkened to #4c544f for AA, which
+     made placeholders read as filled-in values. A placeholder is a hint, not
+     content, so it sits lighter than --text-muted while still clearing 4.5:1 on
+     the input surface. One token, changed once, fixes every field via the
+     ::placeholder rule below. */
+  --text-placeholder: #a6aba8;
+
+  /* Borders + dividers */
+  --border-subtle: var(--soft-gray);   /* dividers, table borders, default */
+  --border-strong: var(--card-border); /* card outline (transparent in light) */
+  /* Boundary of an interactive control (input, select, checkbox). WCAG 1.4.11
+     wants 3:1 for these, which --border-subtle cannot give without turning every
+     decorative divider into a hard rule. Separate role, separate value. */
+  --border-control: #7e8b9e;
+  /* Focus indicator. Kept distinct from --brand so it stays visible on brand
+     fills, and measured at 3:1 against the app surfaces (WCAG 1.4.11). */
+  --ring-focus: #2c62b4;
+
+  /* Brand + accent */
+  --brand: var(--dark-teal);
+  --brand-soft: var(--deep-green);
+  --brand-tint: #e0f2f1;
+  /* Brand used AS TEXT or an icon, rather than as a fill. A single token cannot
+     serve both on a dark canvas: a fill must be dark enough to carry white text
+     (<=0.18 luminance) while brand-coloured text must be light enough to read on
+     the surface (>=0.24). In light mode both roles collapse to the same navy. */
+  --brand-text: var(--brand);
+  --accent: var(--coral);
+  --accent-soft: var(--light-coral);
+  /* Selected-row fill and filter chips read this. It used to be the coral tint
+     (#fff4f1), which put a pink wash on every selected grid row and every
+     active filter chip — the single most visible source of "decorative colour"
+     in the app. A neutral navy-grey tint carries the same "this row is picked"
+     meaning without introducing a second brand hue. The coral palette token is
+     untouched for the few places that reference it directly. */
+  --accent-tint: #eef2f7;
+  --accent-pastel: var(--coral-pastel); /* soft pastel coral */
+
+  /* ── Table / sheet role tokens ──────────────────────────────────────────
+     Every table in the app was styling its header with --light-gray (the
+     generic "elevated" surface) or --surface (== the card, i.e. invisible),
+     so headers didn't read as structural. These three give every table the
+     SAME identity regardless of which of the 9 hand-rolled patterns renders
+     it, and are strong enough on their own that no table needs --soft-gray
+     darkened to compensate (that was the earlier mistake - one token serving
+     both "faint card divider" and "table gridline" jobs at once).
+     - table-header-bg/-fg: header row fill + label colour. Deliberately
+       NEUTRAL, not the sky-blue pair this used to reuse: a tinted header row
+       reads as a highlight or a selected state, which is wrong for a dense CRM
+       grid where the header is structure, not emphasis. Pale sage is one step
+       up from the card surface - enough to separate, not enough to draw the eye.
+     - table-grid: row/column separator inside a table specifically. One step
+       darker than --border-subtle so gridlines register at table density
+       without touching the lighter divider used elsewhere. */
+  --table-header-bg: var(--light-gray);
+  --table-header-fg: var(--charcoal);
+  /* Neutral gridline. Barely visible at rest, enough to read as structure at
+     table density. Was #d0d4ce, a green-grey that also measured 1.44:1 against
+     the card and so failed its own 1.5:1 floor in the audit; this neutral value
+     clears it and matches the rest of the ramp. */
+  --table-grid: #c9ced6;
+
+  /* Functional state - fg/bg/border come together so badges stay legible */
+  --state-success-fg: var(--success);
+  --state-success-bg: var(--success-bg);
+  --state-success-border: var(--mint-green);
+  --state-danger-fg: var(--soft-red);
+  --state-danger-bg: var(--coral-tint);
+  --state-danger-border: var(--soft-red);
+  --state-warning-fg: #92400e;
+  --state-warning-bg: var(--pastel-yellow);
+  --state-warning-border: var(--warm-yellow);
+
+  /* Spreadsheet-style grids (programming sheet, tracking sheet) */
+  --sheet-header-bg: #f0fdfa;
+  --sheet-header-fg: #115e59;
+  --sheet-header-accent: #99f6e4;
+  --sheet-row-hover: rgba(14, 165, 233, 0.06);
+  --sheet-focus-bg: rgba(14, 165, 233, 0.08);
+  --sheet-resize: rgba(59, 130, 246, 0.4);
+  --sheet-resize-active: rgba(59, 130, 246, 0.55);
+
+  /* "New item" badge in the enquiry items table - lime-green fill, blue label.
+     The label was #2563eb: 3.43:1 on this lime. Deepened to blue-900 so the
+     blue-on-lime pairing survives. */
+  --badge-new-bg: #a3e635;
+  --badge-new-fg: #1c3c94;
+
+  /* Solid destructive CTA (e.g. "Delete" buttons) - saturated, not the muted badge red */
+  --state-danger-solid: var(--soft-red);
+  --state-danger-solid-fg: var(--white);
+
+  /* Dialog scrim - sits over the page behind modal content */
+  --overlay-scrim: rgba(0, 0, 0, 0.4);
+  --overlay-scrim-strong: rgba(0, 0, 0, 0.6);
+
+  /* Branded surfaces (often white text on a saturated bg, e.g. WhatsApp avatars) */
+  --on-brand: var(--white);
+  /* Ink for labels sitting on an --accent fill. Coral is a light colour: white on
+     it measures 2.46:1, and darkening the coral enough to fix that would cost the
+     accent its identity. Dark ink keeps the coral and clears AA. Literal rather
+     than var(--charcoal) because --accent is the same coral in every theme, so
+     its ink has to be too. */
+  --on-accent: #2b1710;
+
+  /* Image-cropper stage - fixed near-black in every theme so the photo being
+     cropped reads the same regardless of app theme (like the brand tokens below). */
+  --cropper-stage: #111111;
+
+  /* Printed-document surface - the quotation/PDF preview is always white paper,
+     theme-independent, so it does not flip with --surface in dark mode. Also used to
+     render a received email's own HTML, which is authored for white and carries its own
+     inline colours. --paper-ink is the matching fixed dark text so default (unstyled)
+     text stays readable on paper in dark mode instead of inheriting the theme's light ink. */
+  --paper: #ffffff;
+  --paper-ink: #1a1a1a;
+
+  /* WhatsApp third-party brand - fixed regardless of app theme */
+  --brand-whatsapp: #128c7e;
+  --brand-whatsapp-strong: #075e54;
+  --brand-whatsapp-accent: #25d366;
+  --brand-whatsapp-fg: #ffffff;
+  --brand-whatsapp-fg-soft: rgba(255, 255, 255, 0.7);
+  --brand-whatsapp-fg-faint: rgba(255, 255, 255, 0.2);
+
+  /* WhatsApp chat preview surfaces (used in the embedded chat simulator) */
+  --wa-chat-bg: #e9ddd4;
+  --wa-bubble-out: #d9fdd3;
+  --wa-bubble-in: #ffffff;
+  --wa-text: #111b21;
+  --wa-meta: #667781;
+  --wa-tick-read: #53bdeb;
+  --wa-template-bg: rgba(37, 211, 102, 0.15);
+  --wa-doc-bg: rgba(0, 0, 0, 0.04);
+  --wa-doc-border: rgba(0, 0, 0, 0.08);
+  --wa-doc-icon-bg: #e8f0fe;
+  --wa-doc-icon-fg: #1a56db;
+
+  /* Status badges used in chat header (window open / closed).
+     Foregrounds deepened from #d97706 / #16a34a (2.84:1 / 2.96:1 over the tint). */
+  --status-pending-bg: rgba(245, 158, 11, 0.1);
+  --status-pending-fg: #a85b03;
+  --status-pending-border: rgba(245, 158, 11, 0.2);
+  --status-active-bg: rgba(34, 197, 94, 0.08);
+  --status-active-fg: #0f8039;
+  --status-active-border: rgba(34, 197, 94, 0.2);
+
+  /* Scrim used inside framed previews (phone mockups, image bubbles) */
+  --preview-scrim: rgba(0, 0, 0, 0.1);
+  --preview-scrim-strong: rgba(0, 0, 0, 0.2);
+  --preview-scrim-icon: rgba(0, 0, 0, 0.3);
+  --preview-scrim-text: rgba(0, 0, 0, 0.5);
+
+  /* Saturated badge colors (info / pending / error / success) - for status cells, log rows, etc. */
+  --badge-info-bg: #eff6ff;
+  --badge-info-fg: #1a56db;
+  --badge-info-border: #bfdbfe;
+  --badge-pending-bg: #fffbeb;
+  --badge-pending-fg: #a65a03;
+  --badge-pending-border: #fde68a;
+  --badge-error-bg: #fef2f2;
+  --badge-error-fg: #b91c1c;
+  --badge-error-border: #fecaca;
+  --badge-success-bg: #f0fdf4;
+  --badge-success-fg: #10843b;
+  --badge-success-border: #bbf7d0;
+  --badge-accent-bg: #faf5ff;
+  --badge-accent-fg: #7c3aed;
+  --badge-accent-border: #e9d5ff;
+
+  /* Notification category accents (used as icon tints) */
+  --notif-enquiry: #1a56db;
+  --notif-quotation: #7c3aed;
+  --notif-dispatch: #16a34a;
+  --notif-payment: #d97706;
+
+  /* Mac-style window dots used in framed previews */
+  --window-dot-close: #ff5f57;
+  --window-dot-minimize: #febc2e;
+  --window-dot-maximize: #28c840;
+
+  /* Secondary affirmative CTA (e.g. "Save user" - distinct from brand-blue primary) */
+  --cta-secondary-bg: #cfe27a;
+  --cta-secondary-fg: #1a2400;
+  --cta-secondary-border: #1a2400;
+
+  /* Role badges - one set per CRM role */
+  --role-admin-bg: #eff6ff;
+  --role-admin-fg: #1d4ed8;
+  --role-admin-border: #bfdbfe;
+  --role-operations-bg: #f5f3ff;
+  --role-operations-fg: #6d28d9;
+  --role-operations-border: #ddd6fe;
+  --role-sales-bg: #ecfdf5;
+  --role-sales-fg: #065f46;
+  --role-sales-border: #a7f3d0;
+  --role-finance-bg: #fffbeb;
+  --role-finance-fg: #92400e;
+  --role-finance-border: #fde68a;
+  --role-logistics-bg: #fff7ed;
+  --role-logistics-fg: #9a3412;
+  --role-logistics-border: #fed7aa;
+
+  /* Enquiry workflow statuses */
+  /* Every one of these pills used a mid-tone fg on an 8%-tint of the SAME hue,
+     which measured 2.2-4.1:1. The hue is the workflow's identity so it is held
+     exactly; only lightness moved. Borders follow the fg so the pill reads as one
+     unit. Dark mode overrides these further down - a tint over a dark canvas
+     needs the fg to move the other way. */
+  --enquiry-new-bg: rgba(14, 165, 233, 0.08);
+  --enquiry-new-fg: #0775a7;
+  --enquiry-new-border: #0775a7;
+  --enquiry-progress-bg: rgba(217, 119, 6, 0.08);
+  --enquiry-progress-fg: #a65a03;
+  --enquiry-progress-border: #a65a03;
+  --enquiry-quoted-bg: rgba(139, 92, 246, 0.08);
+  --enquiry-quoted-fg: #7b51db;
+  --enquiry-quoted-border: #7b51db;
+  --enquiry-closed-bg: rgba(5, 150, 105, 0.08);
+  --enquiry-closed-fg: #037d57;
+  --enquiry-closed-border: #037d57;
+  --enquiry-cancelled-bg: rgba(220, 38, 38, 0.08);
+  --enquiry-cancelled-fg: #cf2323;
+  --enquiry-cancelled-border: #cf2323;
+  /* July-10 pipeline additions */
+  --enquiry-revised-bg: rgba(20, 184, 166, 0.08);
+  --enquiry-revised-fg: #0a7c70;
+  --enquiry-revised-border: #0a7c70;
+  --enquiry-order-bg: rgba(5, 150, 105, 0.08);
+  --enquiry-order-fg: #037d57;
+  --enquiry-order-border: #037d57;
+  --enquiry-regret-bg: rgba(225, 29, 72, 0.08);
+  --enquiry-regret-fg: #cf1a42;
+  --enquiry-regret-border: #cf1a42;
+  --enquiry-hold-bg: rgba(100, 116, 139, 0.10);
+  --enquiry-hold-fg: #5c6b81;
+  --enquiry-hold-border: #5c6b81;
+  /* DRAFTED: incomplete draft awaiting a team review pass (amber "attention"). */
+  --enquiry-drafted-bg: rgba(217, 119, 6, 0.10);
+  --enquiry-drafted-fg: #a65a03;
+  --enquiry-drafted-border: #a65a03;
+  /* Pastel-yellow row tint for enquiries that contain a Binding Wire item. */
+  --enquiry-bindingwire-bg: rgba(250, 204, 21, 0.14);
+  /* Coral row tint for incomplete (DRAFTED / needs-review) enquiries. */
+  --enquiry-incomplete-bg: rgba(251, 125, 96, 0.16);
+
+  /* Vendor comparison - distinct per-vendor colours (assigned by column index).
+     Selected item cells tint these via color-mix; headers use them solid.
+     Fixed across themes (like the auth/WhatsApp brand tokens above) - these are
+     categorical identifiers, not surface colors, so they must not shift with theme. */
+  --vendor-1: #2563eb;
+  --vendor-2: #04835b;
+  --vendor-3: #ae5f04;
+  --vendor-4: #7c3aed;
+  --vendor-5: #dc2626;
+  --vendor-6: #067e9b;
+  --vendor-7: #5a7312;
+  --vendor-8: #187a15;
+  --vendor-9: #ba1dc9;
+  --vendor-10: #c91d7a;
+
+  /* RFQ channel chips */
+  --rfq-vendor-bg: #eff6ff;
+  --rfq-vendor-fg: #1a56db;
+  --rfq-vendor-border: #bfdbfe;
+  --rfq-transport-bg: #f5f3ff;
+  --rfq-transport-fg: #7c3aed;
+  --rfq-transport-border: #ddd6fe;
+
+  /* Highlight accent (e.g. bright green pings, "new" indicators) */
+  --accent-highlight: #39ff14;
+
+  /* Deep WhatsApp border (sidebar / chat header divider) */
+  --brand-whatsapp-deep: #064e45;
+
+  /* Solid info CTA (saturated blue, e.g. "Save" buttons in non-brand contexts).
+     Was #3b82f6, which carries white text at only 3.68:1. Hover goes darker
+     still, so the interactive state keeps gaining contrast. */
+  --cta-info-bg: #3372da;
+  --cta-info-bg-hover: #2a60b8;
+  --cta-info-fg: #ffffff;
+
+  /* Status dots and the rating star are meaningful graphics, so 1.4.11 asks 3:1
+     against the surface. They measured 2.06-2.46:1. */
+  --dot-inactive: #8492a5;
+  /* Active "online" dot (used for live-status indicators) */
+  --dot-online: #1ba64e;
+
+  /* Neutral slate (used for tag chips, tertiary surfaces) */
+  --neutral-bg: #f8fafc;
+  --neutral-fg: #5c6b81;
+  --neutral-border: #bac5d4;
+
+  /* Star rating yellow */
+  --rating-star: #ca8107;
+
+  /* Auth screens - deliberately fixed across themes (light surface, blue brand). */
+  --auth-overlay: #000;
+  --auth-card: #fff;
+  --auth-card-border: rgba(255, 255, 255, 0.2);
+  --auth-panel: rgba(37, 99, 235, 0.8);
+  --auth-panel-fg: #fff;
+  --auth-panel-fg-soft: rgba(255, 255, 255, 0.6);
+  --auth-panel-fg-faint: rgba(255, 255, 255, 0.25);
+  --auth-form-bg: #fbfafb;
+  --auth-form-fg-strong: #111827;
+  --auth-form-fg-label: #4b5563;
+  --auth-form-fg-helper: #6b7280;
+  --auth-form-fg-faint: #6f747d;
+  --auth-form-fg-hover: #374151;
+  --auth-form-border: #e5e7eb;
+  --auth-form-input-bg: #fff;
+  --auth-form-input-fg: #111;
+  --auth-cta-bg: #3372da;
+  --auth-cta-bg-hover: #2a60b8;
+  --auth-cta-fg: #fff;
+  --auth-error-bg: #fef2f2;
+  --auth-error-border: #fee2e2;
+  --auth-error-fg-strong: #dc2626;
+  --auth-error-fg: #cd3939;
+  --auth-error-icon: #f87171;
+  --auth-success-bg: #f0fdf4;
+  --auth-success-border: #dcfce7;
+  --auth-success-fg: #15803d;
+  --auth-success-icon: #22c55e;
+  --auth-link: #3271d7;
+  --auth-link-hover: #2a60b8;
+}
+
+/* WhatsApp chat surfaces - theme-aware. Light keeps the classic beige wallpaper +
+   green/white bubbles; dark uses WhatsApp's dark palette; pure-dark goes OLED black. */
+.dark {
+  --wa-chat-bg: #0b141a;
+  --wa-bubble-out: #005c4b;
+  --wa-bubble-in: #202c33;
+  --wa-text: #e9edef;
+  --wa-meta: #8696a0;
+  --wa-template-bg: rgba(37, 211, 102, 0.18);
+  --wa-doc-bg: rgba(255, 255, 255, 0.05);
+  --wa-doc-border: rgba(255, 255, 255, 0.1);
+  --wa-doc-icon-bg: rgba(37, 211, 102, 0.18);
+  --wa-doc-icon-fg: #25d366;
+}
+
+.pure-dark {
+  --wa-chat-bg: #000000;
+  --wa-bubble-out: #0a3d33;
+  --wa-bubble-in: #121b20;
+  --wa-text: #e9edef;
+  --wa-meta: #8696a0;
+  --wa-template-bg: rgba(37, 211, 102, 0.16);
+  --wa-doc-bg: rgba(255, 255, 255, 0.04);
+  --wa-doc-border: rgba(255, 255, 255, 0.08);
+  --wa-doc-icon-bg: rgba(37, 211, 102, 0.16);
+  --wa-doc-icon-fg: #25d366;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Dark-theme overrides for the badge / status / chip families.
+   Those families were declared once in the shared :root,.dark,.pure-dark block,
+   so dark mode inherited near-white chip surfaces on a near-black canvas. Two
+   problems followed: the chips glared, and every fg/bg pair that relies on a
+   translucent tint of the surface flipped direction - a tint over a dark canvas
+   needs a LIGHTER foreground, not a darker one. Each pair below is measured by
+   scripts/contrast-audit.ts in both themes.
+   ───────────────────────────────────────────────────────────────────────────── */
+.dark,
+.pure-dark {
+  /* Brand as text/icon: the fill token stays dark enough for white labels, so a
+     separate lighter step is needed for brand-coloured text. */
+  --brand-text: #8ab6e8;
+  --brand-tint: #16283d;
+  --border-control: #6b7684;
+  --ring-focus: #6ba3e0;
+
+  /* Placeholder dimmer than --text-muted (#a1a1aa) on the dark input surface,
+     still legible. */
+  --text-placeholder: #7c8790;
+
+  /* Table header fill/label and gridline, inverted for a dark canvas. Neutral
+     for the same reason as the light pair: structure, not emphasis. */
+  --table-header-bg: #252a27;
+  --table-header-fg: #d3dbd5;
+  /* Was 0.10 alpha → 1.35:1 against the card, i.e. gridlines that did not
+     register as structure and failed the audit's 1.5:1 floor. Raised until it
+     clears, and kept one step stronger than --border-subtle (0.16) so a table
+     gridline still reads differently from a decorative divider. */
+  --table-grid: rgba(255, 255, 255, 0.19);
+
+  /* A destructive fill still carries white text here, so it cannot follow
+     --soft-red (which is the light badge text colour in this theme). */
+  --state-danger-solid: #b3423f;
+
+  --state-warning-fg: #fcd34d;
+  --state-warning-bg: #3a2f0a;
+  --state-warning-border: #6b5510;
+
+  --status-pending-bg: rgba(245, 158, 11, 0.14);
+  --status-pending-fg: #fbbf24;
+  --status-pending-border: rgba(245, 158, 11, 0.3);
+  --status-active-bg: rgba(34, 197, 94, 0.14);
+  --status-active-fg: #4ade80;
+  --status-active-border: rgba(34, 197, 94, 0.3);
+
+  --badge-info-bg: #152a4d;
+  --badge-info-fg: #93b8f7;
+  --badge-info-border: #2a4c85;
+  --badge-pending-bg: #3a2a0a;
+  --badge-pending-fg: #fbbf24;
+  --badge-pending-border: #6b4c10;
+  --badge-error-bg: #3a1515;
+  --badge-error-fg: #f87171;
+  --badge-error-border: #7a2a2a;
+  --badge-success-bg: #0d2c1a;
+  --badge-success-fg: #4ade80;
+  --badge-success-border: #1f5c36;
+  --badge-accent-bg: #251a3d;
+  --badge-accent-fg: #c4b5fd;
+  --badge-accent-border: #4a3578;
+
+  --neutral-bg: #1f2329;
+  --neutral-fg: #a1adbe;
+  --neutral-border: rgba(255, 255, 255, 0.16);
+
+  --role-admin-bg: #152a4d;
+  --role-admin-fg: #93b8f7;
+  --role-admin-border: #2a4c85;
+  --role-operations-bg: #231a3d;
+  --role-operations-fg: #c4b5fd;
+  --role-operations-border: #463178;
+  --role-sales-bg: #0d2c22;
+  --role-sales-fg: #6ee7b7;
+  --role-sales-border: #1f5c48;
+  --role-finance-bg: #3a2a0a;
+  --role-finance-fg: #fcd34d;
+  --role-finance-border: #6b4c10;
+  --role-logistics-bg: #3a1f0d;
+  --role-logistics-fg: #fdba74;
+  --role-logistics-border: #7a4218;
+
+  --rfq-vendor-bg: #152a4d;
+  --rfq-vendor-fg: #93b8f7;
+  --rfq-vendor-border: #2a4c85;
+  --rfq-transport-bg: #231a3d;
+  --rfq-transport-fg: #c4b5fd;
+  --rfq-transport-border: #463178;
+
+  /* Workflow hues held, lightness inverted for the dark canvas. */
+  --enquiry-new-fg: #38bdf8;
+  --enquiry-new-border: #38bdf8;
+  --enquiry-progress-fg: #fbbf24;
+  --enquiry-progress-border: #fbbf24;
+  --enquiry-quoted-fg: #a78bfa;
+  --enquiry-quoted-border: #a78bfa;
+  --enquiry-closed-fg: #34d399;
+  --enquiry-closed-border: #34d399;
+  --enquiry-cancelled-fg: #f87171;
+  --enquiry-cancelled-border: #f87171;
+  --enquiry-revised-fg: #2dd4bf;
+  --enquiry-revised-border: #2dd4bf;
+  --enquiry-order-fg: #34d399;
+  --enquiry-order-border: #34d399;
+  --enquiry-regret-fg: #fb7185;
+  --enquiry-regret-border: #fb7185;
+  --enquiry-hold-fg: #94a3b8;
+  --enquiry-hold-border: #94a3b8;
+  --enquiry-drafted-fg: #fbbf24;
+  --enquiry-drafted-border: #fbbf24;
+}
+
+/* Spreadsheet grid overrides for dark themes */
+.dark,
+.pure-dark {
+  --sheet-header-bg: var(--light-gray);
+  --sheet-header-fg: var(--charcoal);
+  --sheet-header-accent: rgba(255, 255, 255, 0.08);
+  --sheet-row-hover: rgba(255, 255, 255, 0.04);
+  --sheet-focus-bg: rgba(255, 255, 255, 0.06);
+  --sheet-resize: rgba(255, 255, 255, 0.2);
+  --sheet-resize-active: rgba(255, 255, 255, 0.35);
+}
+
+.sidebar-icon svg * {
+  stroke-width: 2.2 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   GLOBAL thin scrollbars - works on Chrome/Edge/Safari (webkit) and Firefox.
+   Mac native overlay scrollbars are already thin; this normalises Windows/Linux.
+   ───────────────────────────────────────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+*::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18) !important;
+  border-radius: 10px !important;
+  border: 0 !important;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.32) !important;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+/* Dark themes: invert thumb colour so it shows on dark surfaces */
+.dark *,
+.pure-dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+.dark *::-webkit-scrollbar-thumb,
+.pure-dark *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+.dark *::-webkit-scrollbar-thumb:hover,
+.pure-dark *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28) !important;
+}
+
+/* Sidebar-specific: thumb hidden by default, fades in on sidebar hover.
+   Sidebar always has a dark background, so this stays white regardless of theme. */
+.sidebar-scroll {
+  scrollbar-color: transparent transparent !important;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px !important;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  transition: background 0.2s ease-out;
+}
+.sidebar-shell:hover .sidebar-scroll {
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent !important;
+}
+.sidebar-shell:hover .sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+.sidebar-shell:hover .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32) !important;
+}
+

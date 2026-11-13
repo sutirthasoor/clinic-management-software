@@ -42,3 +42,14 @@ Firebase web config lives in `web/.env` and `mobile/.env` (copied from your snip
 2. `npm run deploy:rules` to publish the regenerated Firestore + Storage rules (required: new collections and stricter field guards).
 3. Rotate / restrict the Firebase web API key (HTTP referrer + app restrictions) and enable App Check; `.env` files were included in the original zip and must not be shared.
 4. Messaging, queue, consents, data requests and credit notes are new collections; no migration needed.
+
+## Omnia UI, Patient Chart, automatic WhatsApp + email (latest changes)
+- **UI**: web app now uses Omnia's design tokens (`web/src/omnia-tokens.css`), Solar icons (offline subset, `npm run icons` in `web/` regenerates), Omnia-style collapsible sidebar, topbar with Ctrl/⌘+K, light/dark/system theme, and the Omnia login shell.
+- **Roles**: admin, doctor, nutritionist, yoga teacher, naturopath, patient. Each practitioner has its own module group. Admin has full create/read/update/delete on every module (logs stay read-only).
+- **Patient Chart** (`/chart`): doctors see every health record (clinical, nutrition, yoga, naturopathy, documents) of patients assigned to them (Users & Roles -> primary provider). Enforced in Firestore rules (`isMyPatient`).
+- **Documents**: stored as base64 inside Firestore documents only. Firebase Storage is removed from deploy. Firestore caps a document at 1 MiB, so uploads are limited to 650 KB.
+- **Auto-send**: `functions/comms.js` emails (SMTP) and WhatsApps every new prescription, lab result, radiology report, referral, invoice, payment, credit note, claim, consultation, document, nutrition plan, yoga program and naturopathy plan to the patient, as an attached file or a generated PDF. Delivery results are in Administration -> Delivery Log. Toggle in Clinic Settings.
+  - Secrets: `firebase functions:secrets:set WHATSAPP_ACCESS_TOKEN WHATSAPP_PHONE_NUMBER_ID SMTP_USER SMTP_PASS`
+  - Params: `SMTP_HOST`, `SMTP_PORT`, `MAIL_FROM`
+  - Approve WhatsApp templates `clinic_document_notice` and `clinic_document_ready` (see comments in `comms.js`).
+  - Deploy: `npm run sync && cd functions && npm i && cd .. && npm run deploy:rules && npm run deploy:web`

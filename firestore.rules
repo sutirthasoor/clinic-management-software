@@ -10,6 +10,7 @@ service cloud.firestore {
     function isProvider() { return signedIn() && me().role in ['doctor', 'nutritionist', 'yogaTeacher', 'naturopath'] && me().get('active', true) == true; }
     function isDoctor() { return isProvider(); }
     function isPatient() { return hasRole('patient'); }
+    function isMyPatient(pid) { return get(/databases/$(database)/documents/users/$(pid)).data.primaryProviderId == request.auth.uid; }
 
     // ---- users: self-registration is patient-only; roles are changed by admins only
     match /users/{uid} {
@@ -30,6 +31,7 @@ service cloud.firestore {
     match /appointments/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
         || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
         || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
@@ -52,31 +54,44 @@ service cloud.firestore {
     match /consultations/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
-      allow update: if hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /prescriptions/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
-      allow update: if hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /vitals/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid
         || isPatient() && request.resource.data.patientId == request.auth.uid;
-      allow update: if hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /labOrders/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
         || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
@@ -88,6 +103,7 @@ service cloud.firestore {
     match /labResults/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
         || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
@@ -99,6 +115,7 @@ service cloud.firestore {
     match /radiology/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
         || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
@@ -110,48 +127,69 @@ service cloud.firestore {
     match /immunizations/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
-      allow update: if hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /allergies/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid
         || isPatient() && request.resource.data.patientId == request.auth.uid;
-      allow update: if hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /medicalHistory/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid
         || isPatient() && request.resource.data.patientId == request.auth.uid;
-      allow update: if hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /procedures/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
-      allow update: if hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /referrals/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
-      allow update: if hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /admissions/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
         || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
@@ -163,6 +201,7 @@ service cloud.firestore {
     match /telemedicine/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
         || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
@@ -174,14 +213,19 @@ service cloud.firestore {
     match /followUps/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
-      allow update: if hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /documents/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
         || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid
@@ -194,6 +238,8 @@ service cloud.firestore {
 
     match /nutritionAssessments/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
@@ -205,6 +251,8 @@ service cloud.firestore {
 
     match /nutritionPlans/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
@@ -216,6 +264,8 @@ service cloud.firestore {
 
     match /mealLogs/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
@@ -228,6 +278,8 @@ service cloud.firestore {
 
     match /yogaPrograms/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
@@ -239,6 +291,8 @@ service cloud.firestore {
 
     match /yogaSessions/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
@@ -250,6 +304,8 @@ service cloud.firestore {
 
     match /practiceLogs/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
@@ -262,6 +318,8 @@ service cloud.firestore {
 
     match /naturopathyAssessments/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
@@ -273,6 +331,8 @@ service cloud.firestore {
 
     match /naturopathyPlans/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
@@ -284,6 +344,8 @@ service cloud.firestore {
 
     match /therapySessions/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
@@ -308,9 +370,12 @@ service cloud.firestore {
     match /rxTemplates/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
-      allow update: if hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
-      allow delete: if hasRole('doctor') && resource.data.doctorId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid;
     }
 
     match /leaves/{id} {
@@ -325,15 +390,20 @@ service cloud.firestore {
     match /familyMembers/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if isPatient() && request.resource.data.patientId == request.auth.uid;
-      allow update: if isPatient() && resource.data.patientId == request.auth.uid && request.resource.data.patientId == request.auth.uid;
-      allow delete: if isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || isPatient() && request.resource.data.patientId == request.auth.uid;
+      allow update: if isAdmin()
+        || isPatient() && resource.data.patientId == request.auth.uid && request.resource.data.patientId == request.auth.uid;
+      allow delete: if isAdmin()
+        || isPatient() && resource.data.patientId == request.auth.uid;
     }
 
     match /insurancePolicies/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
         || isPatient() && request.resource.data.patientId == request.auth.uid;
@@ -344,12 +414,19 @@ service cloud.firestore {
 
     match /feedback/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if isPatient() && request.resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || isPatient() && request.resource.data.patientId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /tickets/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
         || isPatient() && request.resource.data.patientId == request.auth.uid && request.resource.data.get('status', 'Open') == 'Open';
@@ -492,22 +569,32 @@ service cloud.firestore {
     match /medReminders/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if isPatient() && request.resource.data.patientId == request.auth.uid;
-      allow update: if isPatient() && resource.data.patientId == request.auth.uid && request.resource.data.patientId == request.auth.uid;
-      allow delete: if isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || isPatient() && request.resource.data.patientId == request.auth.uid;
+      allow update: if isAdmin()
+        || isPatient() && resource.data.patientId == request.auth.uid && request.resource.data.patientId == request.auth.uid;
+      allow delete: if isAdmin()
+        || isPatient() && resource.data.patientId == request.auth.uid;
     }
 
     match /consents/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if isPatient() && request.resource.data.patientId == request.auth.uid;
-      allow update: if isPatient() && resource.data.patientId == request.auth.uid && request.resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || isPatient() && request.resource.data.patientId == request.auth.uid;
+      allow update: if isAdmin()
+        || isPatient() && resource.data.patientId == request.auth.uid && request.resource.data.patientId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     match /dataRequests/{id} {
       allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
         || isPatient() && request.resource.data.patientId == request.auth.uid && request.resource.data.get('status', 'Open') == 'Open';
@@ -535,9 +622,13 @@ service cloud.firestore {
     match /messages/{id} {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if hasRole('doctor') && request.resource.data.doctorId == request.auth.uid && request.resource.data.fromRole == 'doctor'
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid && request.resource.data.fromRole == 'doctor'
         || isPatient() && request.resource.data.patientId == request.auth.uid && request.resource.data.fromRole == 'patient';
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /settings/{id} {
@@ -546,11 +637,16 @@ service cloud.firestore {
         || isPatient();
       allow create: if isAdmin();
       allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /auditLogs/{id} {
       allow read: if isAdmin();
       allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+    }
+
+    match /commLogs/{id} {
+      allow read: if isAdmin();
     }
   }
 }

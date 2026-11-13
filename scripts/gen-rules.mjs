@@ -32,6 +32,7 @@ function block(m) {
     if (ch === 'u' && hasD) c += ' && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid';
     if (ch === 'd' && hasD) c += ' && resource.data.doctorId == request.auth.uid';
     cond[OPS[ch]].push(c);
+    if (ch === 'r' && role === 'doctor' && hasP && mode === 'own') cond.read.push("hasRole('doctor') && isMyPatient(resource.data.patientId)");
   }
 
   for (const ch of m.access.patient || '') {
@@ -72,6 +73,7 @@ service cloud.firestore {
     function isProvider() { return signedIn() && me().role in ['doctor', 'nutritionist', 'yogaTeacher', 'naturopath'] && me().get('active', true) == true; }
     function isDoctor() { return isProvider(); }
     function isPatient() { return hasRole('patient'); }
+    function isMyPatient(pid) { return get(/databases/$(database)/documents/users/$(pid)).data.primaryProviderId == request.auth.uid; }
 
     // ---- users: self-registration is patient-only; roles are changed by admins only
     match /users/{uid} {

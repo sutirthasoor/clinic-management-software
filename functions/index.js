@@ -50,3 +50,6 @@ exports.sendBookingWhatsApp = onDocumentWritten({
   });
   if (!response.ok) throw new Error(`WhatsApp API returned ${response.status}: ${await response.text()}`);
 });
+
+// Automatic WhatsApp + email delivery of every patient document (see comms.js)
+Object.assign(exports, require('./comms'));

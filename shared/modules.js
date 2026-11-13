@@ -407,22 +407,37 @@ export const MODULES = [
     access: { admin: 'rcu', doctor: 'r', patient: 'r' },
     fields: [text('clinicName', 'Clinic name', { required: true }), area('address', 'Address'), text('phone', 'Phone'), text('email', 'Email'),
       text('website', 'Website'), text('workingHours', 'Working hours'), text('currency', 'Currency'), text('taxId', 'GSTIN / tax id'),
-      num('slotMinutes', 'Default slot length (min)'), file('logo', 'Logo')],
+      num('slotMinutes', 'Default slot length (min)'), check('autoSendDocuments', 'Auto-send new documents to patients by WhatsApp and email'), file('logo', 'Logo')],
     columns: ['clinicName', 'phone', 'workingHours'] },
   { key: 'auditLogs', label: 'Audit Logs', group: 'Administration', icon: 'list-outline',
     access: { admin: 'r' },
     extraRules: "allow create: if signedIn() && request.resource.data.uid == request.auth.uid;",
     fields: [text('userName', 'User'), text('role', 'Role'), text('action', 'Action'), text('collection', 'Collection'), text('docId', 'Document')],
     columns: ['userName', 'role', 'action', 'collection', 'docId'] },
+  // Written only by the Cloud Function (Admin SDK). Admin can read the delivery log and resend nothing here by design.
+  { key: 'commLogs', label: 'Delivery Log', group: 'Administration', icon: 'send-outline',
+    access: { admin: 'r' },
+    fields: [text('docLabel', 'Document'), text('patientName', 'Patient'), text('emailStatus', 'Email'), text('whatsappStatus', 'WhatsApp'), text('error', 'Error')],
+    columns: ['docLabel', 'patientName', 'emailStatus', 'whatsappStatus', 'error'] },
 ];
 
 // ---------------------------------------------------------------- helpers shared by apps + rules generator
 export const hasField = (m, name) => (m.fields || []).some((f) => f.name === name);
+// Admin manages everything (system logs stay read-only). Doctors can read every patient-linked
+// health record (also nutrition / yoga / naturopathy) of THEIR assigned patients, via the Patient Chart.
+const ADMIN_READ_ONLY = ['auditLogs', 'analytics', 'timeline', 'commLogs'];
+for (const m of MODULES) {
+  if (m.custom || m.source || !m.access) continue;
+  if (!ADMIN_READ_ONLY.includes(m.key)) m.access.admin = 'rcud';
+  if (hasField(m, 'patientId') && !['Billing', 'Operations'].includes(m.group) && !m.access.doctor) m.access.doctor = 'r';
+}
 // Provider records carry an owner id so Firestore can enforce patient scope, including records
 // such as vitals and allergies that were previously patient-linked only.
 for (const m of MODULES) {
   if (PROVIDER_ROLES.some((role) => m.access?.[role]) && hasField(m, 'patientId') && !hasField(m, 'doctorId')) m.fields.unshift({ ...D, required: false });
 }
+// Modules whose records belong to a patient (shown in the Patient Chart).
+export const chartModules = () => MODULES.filter((m) => !m.custom && !m.source && hasField(m, 'patientId'));
 export function doctorReadMode(m) {
   if (m.doctorScope) return 'own';
   if (m.doctorRead) return m.doctorRead;
@@ -583,7 +598,7 @@ export const MENU = {
     ['Billing', ['invoices', 'payments', 'creditNotes', 'insuranceClaims', 'insurancePolicies', 'services', 'expenses']],
     ['Operations', ['staff', 'shifts', 'attendance', 'departments', 'branches', 'rooms', 'inventory', 'pharmacy', 'suppliers', 'purchaseOrders', 'equipment']],
     ['Communication', ['announcements', 'messages', 'tickets', 'feedback', 'dataRequests', 'consents']],
-    ['Administration', ['settings', 'auditLogs']],
+    ['Administration', ['settings', 'commLogs', 'auditLogs']],
   ],
   doctor: [
     ['Insights', ['timeline']],
