@@ -139,3 +139,13 @@ Applies to web AND mobile unless noted. Everything is driven from `shared/module
 - Custom roles / permission matrix (receptionist, nurse, pharmacist, lab tech), 2FA / MFA, App Check, IP allow-list
 - Chat-style thread UI for messages, WebRTC video for telemedicine, drug-interaction checks, DICOM viewer, HL7 lab integration
 - Native date / time pickers on mobile (currently typed with a "Use today" shortcut)
+
+---
+
+## Wellness specialists: added modules (all [Built], web + mobile)
+- **Nutritionist**: body measurements (BMI, waist-hip ratio), lab markers, food allergies and intolerances, supplement plans, goals and progress, meal and recipe library, richer nutrition assessment.
+- **Yoga teacher**: intake and screening, progress tracking, pranayama and meditation plans, class schedule, class attendance, pose and sequence library.
+- **Naturopath**: constitution assessment, detox and cleansing programs, herbal and remedy prescriptions, hydrotherapy and bodywork records, symptom tracker, elimination and reintroduction diary.
+- **Shared**: packages and memberships, session billing (invoices), follow-ups, documents, secure messages, Send WhatsApp / Email, scoped Patient Chart.
+- **Automation (Cloud Functions, Resend + WhatsApp Cloud API)**: appointment alerts, reminders, daily log nudges, welcome message, auto-send of plans and documents, provider-to-client messages. Delivery Log shows every send.
+

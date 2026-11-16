@@ -29,8 +29,8 @@ export default function App() {
           <Route path="users" element={<Guard roles={['admin']}><UsersAdmin /></Guard>} />
           <Route path="analytics" element={<Guard roles={['admin']}><Analytics /></Guard>} />
           <Route path="timeline" element={<Guard roles={['admin', 'doctor']}><Timeline /></Guard>} />
-          <Route path="chart" element={<Guard roles={['admin', 'doctor']}><PatientChart /></Guard>} />
-          <Route path="chart/:pid" element={<Guard roles={['admin', 'doctor']}><PatientChart /></Guard>} />
+          <Route path="chart" element={<Guard roles={['admin', 'doctor', 'nutritionist', 'yogaTeacher', 'naturopath']}><PatientChart /></Guard>} />
+          <Route path="chart/:pid" element={<Guard roles={['admin', 'doctor', 'nutritionist', 'yogaTeacher', 'naturopath']}><PatientChart /></Guard>} />
           <Route path="profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Route>

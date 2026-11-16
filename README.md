@@ -48,8 +48,37 @@ Firebase web config lives in `web/.env` and `mobile/.env` (copied from your snip
 - **Roles**: admin, doctor, nutritionist, yoga teacher, naturopath, patient. Each practitioner has its own module group. Admin has full create/read/update/delete on every module (logs stay read-only).
 - **Patient Chart** (`/chart`): doctors see every health record (clinical, nutrition, yoga, naturopathy, documents) of patients assigned to them (Users & Roles -> primary provider). Enforced in Firestore rules (`isMyPatient`).
 - **Documents**: stored as base64 inside Firestore documents only. Firebase Storage is removed from deploy. Firestore caps a document at 1 MiB, so uploads are limited to 650 KB.
-- **Auto-send**: `functions/comms.js` emails (SMTP) and WhatsApps every new prescription, lab result, radiology report, referral, invoice, payment, credit note, claim, consultation, document, nutrition plan, yoga program and naturopathy plan to the patient, as an attached file or a generated PDF. Delivery results are in Administration -> Delivery Log. Toggle in Clinic Settings.
-  - Secrets: `firebase functions:secrets:set WHATSAPP_ACCESS_TOKEN WHATSAPP_PHONE_NUMBER_ID SMTP_USER SMTP_PASS`
-  - Params: `SMTP_HOST`, `SMTP_PORT`, `MAIL_FROM`
+- **Auto-send**: `functions/comms.js` emails (Resend) and WhatsApps every new prescription, lab result, radiology report, referral, invoice, payment, credit note, claim, consultation, document, nutrition plan, yoga program and naturopathy plan to the patient, as an attached file or a generated PDF. Delivery results are in Administration -> Delivery Log. Toggle in Clinic Settings.
+  - Secrets: `firebase functions:secrets:set RESEND_API_KEY WHATSAPP_ACCESS_TOKEN WHATSAPP_PHONE_NUMBER_ID`
+  - Params (optional): `MAIL_FROM` (e.g. `Clinic <hello@yourdomain.com>`, domain verified in Resend), `DEFAULT_COUNTRY_CODE` (default 91), `CLINIC_UTC_OFFSET` (default +05:30)
   - Approve WhatsApp templates `clinic_document_notice` and `clinic_document_ready` (see comments in `comms.js`).
   - Deploy: `npm run sync && cd functions && npm i && cd .. && npm run deploy:rules && npm run deploy:web`
+
+## Specialist modules (Nutritionist, Yoga Teacher, Naturopath)
+All modules live in `shared/modules.js` (run `npm run sync` after editing; it also regenerates `firestore.rules`).
+- **Nutritionist**: assessments (now with BMI auto-calc), body measurements (BMI + waist-hip ratio), lab markers, food allergies and intolerances, nutrition plans, supplement plans, goals and progress, meal and hydration logs, meal and recipe library.
+- **Yoga teacher**: intake and screening, progress tracking, yoga programs, pranayama and meditation plans, session notes, home practice logs, class schedule, class attendance, pose and sequence library.
+- **Naturopath**: wellness assessments, constitution assessment, natural wellness plans, detox and cleansing programs, herbal and remedy prescriptions, hydrotherapy and bodywork records, therapy session notes, symptom tracker, elimination and reintroduction diary.
+- **Shared by all three**: packages and memberships (sessions remaining auto-calculated), invoices, follow-ups, documents, secure messages, announcements, Send WhatsApp / Email, and a Patient Chart limited to their own records.
+- Patients get a "My wellness care" menu (plans, programs, goals, class schedule, packages) and can add their own meal, practice, symptom, elimination and body-measurement logs.
+
+## Automatic WhatsApp + email (Resend)
+Everything below is in `functions/` and is switched on or off in **Clinic Settings**.
+| Automation | Trigger | Channels |
+|---|---|---|
+| Booking received / confirmed / rescheduled / cancelled | appointment created or changed | WhatsApp + email (provider also gets an email for new requests) |
+| Appointment reminder | every 30 min, default 24 h before (`Reminder lead time`) | WhatsApp + email |
+| Daily log nudge | 7 pm clinic time, only for clients on an Active plan with no log today | WhatsApp + email |
+| Welcome message | new patient account | WhatsApp + email |
+| Documents and plans (prescriptions, invoices, nutrition/supplement/yoga/pranayama/naturopathy/detox/herbal plans, package confirmation...) | record created | WhatsApp + email with PDF |
+| Send WhatsApp / Email | provider writes a message to a client | WhatsApp, email or both |
+
+Setup:
+1. `cd functions && npm install`
+2. `firebase functions:secrets:set RESEND_API_KEY WHATSAPP_ACCESS_TOKEN WHATSAPP_PHONE_NUMBER_ID`
+3. Verify your sending domain in Resend and set `MAIL_FROM` in `functions/.env` (the default `onboarding@resend.dev` only delivers to your own Resend account).
+4. Approve these WhatsApp templates (English): `clinic_booking_received`, `clinic_session_confirmed`, `clinic_session_rescheduled`, `clinic_session_cancelled`, `clinic_session_reminder`, `clinic_log_nudge`, `clinic_welcome`, `clinic_custom_message`, `clinic_document_notice`, `clinic_document_ready`. The exact wording and variables are in comments at the top of `functions/index.js` and in `comms.js`.
+5. `npm run deploy:rules`. Firebase will offer to delete the old `sendBookingWhatsApp` function; accept, it is replaced by `appointmentAlerts`.
+- Every send is recorded in **Delivery Log**; a channel that already succeeded is never re-sent on retry. Patients need a phone number (10-digit numbers get `DEFAULT_COUNTRY_CODE`) and/or an email on their profile.
+- If the first scheduled run reports a missing index, open the link in the Cloud Functions log and create it once.
+

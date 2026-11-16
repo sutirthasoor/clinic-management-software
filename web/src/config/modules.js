@@ -6,6 +6,9 @@
 
 export const PROVIDER_ROLES = ['doctor', 'nutritionist', 'yogaTeacher', 'naturopath'];
 export const ROLES = ['admin', ...PROVIDER_ROLES, 'patient'];
+export const SPECIALIST_ROLES = ['nutritionist', 'yogaTeacher', 'naturopath'];
+// { nutritionist: 'rcu', yogaTeacher: 'rcu', naturopath: 'rcu' } for tools every specialist shares
+const forSpecialists = (perm) => Object.fromEntries(SPECIALIST_ROLES.map((r) => [r, perm]));
 
 const mk = (type) => (name, label, extra = {}) => ({ name, label, type, ...extra });
 const text = mk('text'), area = mk('textarea'), num = mk('number'), date = mk('date'),
@@ -152,12 +155,12 @@ export const MODULES = [
       sel('status', 'Status', ['Scheduled', 'Live', 'Completed', 'Missed', 'Cancelled'], { default: 'Scheduled' }), area('notes', 'Notes')],
     columns: ['patientId', 'doctorId', 'scheduledAt', 'status'] },
   { key: 'followUps', label: 'Follow-ups', group: 'Clinical', icon: 'repeat-outline', doctorScope: true,
-    access: { admin: 'r', doctor: 'rcu', patient: 'r' },
+    access: { admin: 'r', doctor: 'rcu', ...forSpecialists('rcu'), patient: 'r' },
     fields: [P, D, date('dueDate', 'Due date', { required: true }), text('reason', 'Reason'),
       sel('status', 'Status', ['Pending', 'Done', 'Missed'], { default: 'Pending' })],
     columns: ['patientId', 'doctorId', 'dueDate', 'status'] },
   { key: 'documents', label: 'Medical Documents', group: 'Clinical', icon: 'folder-outline',
-    access: { admin: 'rcud', doctor: 'rc', patient: 'rcud' },
+    access: { admin: 'rcud', doctor: 'rc', ...forSpecialists('rc'), patient: 'rcud' },
     fields: [P, text('title', 'Title', { required: true }),
       sel('category', 'Category', ['Lab report', 'Scan', 'Discharge summary', 'Prescription', 'Insurance', 'Consent form', 'Other']),
       file('file', 'File'), area('notes', 'Notes')],
@@ -167,7 +170,10 @@ export const MODULES = [
   { key: 'nutritionAssessments', label: 'Nutrition Assessments', group: 'Nutrition Care', icon: 'nutrition-outline', doctorScope: true,
     access: { admin: 'rcud', nutritionist: 'rcu', patient: 'r' },
     fields: [P, D, date('assessedOn', 'Assessment date', { required: true }), num('weightKg', 'Weight (kg)'), num('heightCm', 'Height (cm)'),
-      text('dietaryPattern', 'Dietary pattern'), area('foodPreferences', 'Food preferences'), area('nutritionConcerns', 'Nutrition concerns'), area('notes', 'Assessment notes')],
+      text('dietaryPattern', 'Dietary pattern'), sel('activityLevel', 'Activity level', ['Sedentary', 'Light', 'Moderate', 'Active', 'Very active']),
+      num('mealsPerDay', 'Meals per day'), num('waterIntakeL', 'Usual water intake (L/day)'), num('sleepHours', 'Sleep (hours)'), sel('appetite', 'Appetite', ['Low', 'Normal', 'High', 'Variable']),
+      text('digestiveIssues', 'Digestive issues'), area('medicalConditions', 'Relevant conditions and medications'), text('goal', 'Primary goal'),
+      num('waistCm', 'Waist (cm)'), num('bmi', 'BMI (auto)', { computed: true }), area('foodPreferences', 'Food preferences'), area('nutritionConcerns', 'Nutrition concerns'), area('notes', 'Assessment notes')],
     columns: ['patientId', 'assessedOn', 'weightKg', 'dietaryPattern'] },
   { key: 'nutritionPlans', label: 'Nutrition Plans', group: 'Nutrition Care', icon: 'clipboard-outline', doctorScope: true,
     access: { admin: 'rcud', nutritionist: 'rcu', patient: 'r' },
@@ -223,6 +229,149 @@ export const MODULES = [
       area('sessionNotes', 'Session notes'), area('nextSteps', 'Next steps')],
     columns: ['patientId', 'sessionDate', 'modality', 'durationMinutes', 'response'] },
 
+  // ---------------------------------------------------------------- NUTRITIONIST: extended toolkit
+  { key: 'bodyMetrics', label: 'Body Measurements', group: 'Nutrition Care', icon: 'pulse-outline', doctorScope: true,
+    access: { admin: 'rcud', nutritionist: 'rcu', patient: 'rc' },
+    fields: [P, D, date('measuredOn', 'Measured on', { required: true }), num('weightKg', 'Weight (kg)'), num('heightCm', 'Height (cm)'),
+      num('waistCm', 'Waist (cm)'), num('hipCm', 'Hip (cm)'), num('bodyFatPct', 'Body fat (%)', { max: 80 }), num('muscleMassKg', 'Muscle mass (kg)'),
+      num('visceralFat', 'Visceral fat rating'), num('bmi', 'BMI (auto)', { computed: true }), num('waistHipRatio', 'Waist-hip ratio (auto)', { computed: true }), area('notes', 'Notes')],
+    columns: ['patientId', 'measuredOn', 'weightKg', 'bmi', 'waistCm', 'bodyFatPct'] },
+  { key: 'nutritionLabs', label: 'Lab Markers', group: 'Nutrition Care', icon: 'flask-outline', doctorScope: true,
+    access: { admin: 'rcud', nutritionist: 'rcu', patient: 'r' },
+    fields: [P, D, date('testDate', 'Test date', { required: true }), num('hba1c', 'HbA1c (%)'), num('fastingGlucose', 'Fasting glucose (mg/dL)'),
+      num('hemoglobin', 'Hemoglobin (g/dL)'), num('vitaminD', 'Vitamin D (ng/mL)'), num('vitaminB12', 'Vitamin B12 (pg/mL)'), num('ferritin', 'Ferritin (ng/mL)'),
+      num('totalCholesterol', 'Total cholesterol (mg/dL)'), num('ldl', 'LDL (mg/dL)'), num('hdl', 'HDL (mg/dL)'), num('triglycerides', 'Triglycerides (mg/dL)'),
+      num('tsh', 'TSH (mIU/L)'), file('report', 'Lab report file'), area('interpretation', 'Nutritional interpretation')],
+    columns: ['patientId', 'testDate', 'hba1c', 'fastingGlucose', 'vitaminD', 'ldl'] },
+  { key: 'foodSensitivities', label: 'Food Allergies & Intolerances', group: 'Nutrition Care', icon: 'alert-circle-outline', doctorScope: true,
+    access: { admin: 'rcud', nutritionist: 'rcu', patient: 'r' },
+    fields: [P, D, text('food', 'Food / ingredient', { required: true }), sel('type', 'Type', ['Allergy', 'Intolerance', 'Sensitivity', 'Dislike', 'Religious / cultural']),
+      sel('severity', 'Severity', ['Mild', 'Moderate', 'Severe']), text('reaction', 'Reaction'),
+      sel('confirmedBy', 'Confirmed by', ['Self-reported', 'Elimination trial', 'Lab test', 'Medical diagnosis']), area('notes', 'Notes')],
+    columns: ['patientId', 'food', 'type', 'severity', 'confirmedBy'] },
+  { key: 'supplementPlans', label: 'Supplement Plans', group: 'Nutrition Care', icon: 'medkit-outline', doctorScope: true,
+    access: { admin: 'rcud', nutritionist: 'rcu', patient: 'r' },
+    fields: [P, D, text('title', 'Supplement', { required: true }), text('dosage', 'Dosage'), sel('form', 'Form', ['Capsule', 'Tablet', 'Powder', 'Liquid', 'Gummy', 'Other']),
+      text('frequency', 'Frequency'), sel('timing', 'Timing', ['Morning', 'With meals', 'Before meals', 'Evening', 'Bedtime', 'As directed']),
+      date('startDate', 'Start date', { required: true }), date('endDate', 'End date'), text('purpose', 'Purpose'), area('cautions', 'Cautions and interactions'),
+      sel('status', 'Status', ['Draft', 'Active', 'Completed', 'On hold'], { default: 'Active' })],
+    columns: ['patientId', 'title', 'dosage', 'frequency', 'status'] },
+  { key: 'nutritionGoals', label: 'Goals & Progress', group: 'Nutrition Care', icon: 'checkmark-done-outline', doctorScope: true,
+    access: { admin: 'rcud', nutritionist: 'rcu', patient: 'r' },
+    fields: [P, D, text('goal', 'Goal', { required: true }), sel('metric', 'Measured by', ['Weight', 'Waist', 'Body fat', 'HbA1c', 'Energy', 'Habit', 'Other']),
+      num('baseline', 'Baseline'), num('current', 'Current'), num('target', 'Target'), date('targetDate', 'Target date'),
+      sel('status', 'Status', ['Active', 'Completed', 'On hold', 'Dropped'], { default: 'Active' }), area('notes', 'Notes')],
+    columns: ['patientId', 'goal', 'baseline', 'current', 'target', 'status'] },
+  { key: 'mealTemplates', label: 'Meal & Recipe Library', group: 'Care Tools', icon: 'restaurant-outline', doctorScope: true,
+    access: { admin: 'rcud', nutritionist: 'rcud' },
+    fields: [D, text('title', 'Meal / recipe name', { required: true }), sel('mealType', 'Meal type', ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Drink', 'Dessert']),
+      text('cuisine', 'Cuisine'), text('dietaryTags', 'Dietary tags (vegan, gluten-free, low-GI...)'), text('servingSize', 'Serving size'),
+      num('calories', 'Calories (kcal)'), num('proteinG', 'Protein (g)'), num('carbsG', 'Carbs (g)'), num('fatG', 'Fat (g)'), num('fiberG', 'Fibre (g)'),
+      area('ingredients', 'Ingredients'), area('preparation', 'Preparation')],
+    columns: ['title', 'mealType', 'calories', 'proteinG', 'dietaryTags'] },
+
+  // ---------------------------------------------------------------- YOGA TEACHER: extended toolkit
+  { key: 'yogaAssessments', label: 'Yoga Intake & Screening', group: 'Yoga Practice', icon: 'clipboard-outline', doctorScope: true,
+    access: { admin: 'rcud', yogaTeacher: 'rcu', patient: 'r' },
+    fields: [P, D, date('assessedOn', 'Assessment date', { required: true }), sel('experience', 'Yoga experience', ['None', 'Beginner', 'Intermediate', 'Advanced']),
+      area('goals', 'Goals'), area('injuries', 'Injuries and surgeries'), text('painAreas', 'Pain / sensitive areas'), area('healthPrecautions', 'Health precautions (BP, pregnancy, hernia...)'),
+      sel('flexibility', 'Flexibility', ['Limited', 'Average', 'Good']), sel('balance', 'Balance', ['Needs support', 'Average', 'Good']),
+      sel('strength', 'Core / body strength', ['Low', 'Average', 'Good']), sel('stressLevel', 'Stress level', ['Low', 'Moderate', 'High']),
+      sel('sleepQuality', 'Sleep quality', ['Poor', 'Fair', 'Good']), area('posesToAvoid', 'Poses to avoid'), area('notes', 'Teacher notes')],
+    columns: ['patientId', 'assessedOn', 'experience', 'flexibility', 'stressLevel'] },
+  { key: 'yogaProgress', label: 'Progress Tracking', group: 'Yoga Practice', icon: 'bar-chart-outline', doctorScope: true,
+    access: { admin: 'rcud', yogaTeacher: 'rcu', patient: 'r' },
+    fields: [P, D, date('measuredOn', 'Measured on', { required: true }), num('forwardBendCm', 'Forward bend reach (cm)'), sel('shoulderMobility', 'Shoulder mobility', ['Limited', 'Moderate', 'Full']),
+      num('balanceSeconds', 'Single-leg balance (sec)'), num('breathHoldSeconds', 'Comfortable breath hold (sec)'), num('painScore', 'Pain score (0-10)', { max: 10 }),
+      num('flexibilityRating', 'Flexibility rating (1-5)', { min: 1, max: 5 }), area('notes', 'Observations')],
+    columns: ['patientId', 'measuredOn', 'forwardBendCm', 'balanceSeconds', 'painScore'] },
+  { key: 'mindfulnessPlans', label: 'Pranayama & Meditation Plans', group: 'Yoga Practice', icon: 'leaf-outline', doctorScope: true,
+    access: { admin: 'rcud', yogaTeacher: 'rcu', patient: 'r' },
+    fields: [P, D, text('title', 'Plan name', { required: true }),
+      sel('technique', 'Technique', ['Nadi Shodhana', 'Kapalabhati', 'Bhramari', 'Ujjayi', 'Sheetali', 'Box breathing', 'Mindfulness', 'Yoga Nidra', 'Mantra', 'Other']),
+      date('startDate', 'Start date', { required: true }), num('durationMinutes', 'Minutes per session'), text('frequency', 'Frequency'),
+      area('instructions', 'Instructions'), area('precautions', 'Precautions'), sel('status', 'Status', ['Draft', 'Active', 'Completed', 'On hold'], { default: 'Active' })],
+    columns: ['patientId', 'title', 'technique', 'durationMinutes', 'status'] },
+  { key: 'groupClasses', label: 'Class Schedule', group: 'Yoga Practice', icon: 'calendar-number-outline', doctorScope: true,
+    access: { admin: 'rcud', yogaTeacher: 'rcud', patient: 'r' }, ranges: [['startTime', 'endTime']],
+    fields: [D, text('title', 'Class name', { required: true }),
+      sel('style', 'Style', ['Hatha', 'Vinyasa', 'Ashtanga', 'Iyengar', 'Yin', 'Restorative', 'Therapeutic', 'Prenatal', 'Pranayama', 'Meditation']),
+      sel('level', 'Level', ['All levels', 'Gentle', 'Beginner', 'Intermediate', 'Advanced']), sel('day', 'Day', DAYS, { required: true }),
+      time('startTime', 'Start', { required: true }), time('endTime', 'End', { required: true }), sel('mode', 'Mode', ['Studio', 'Online', 'Home visit']),
+      text('location', 'Location / meeting link'), num('capacity', 'Capacity'), num('fee', 'Fee per session'),
+      sel('status', 'Status', ['Active', 'On hold', 'Cancelled'], { default: 'Active' })],
+    columns: ['title', 'style', 'day', 'startTime', 'capacity', 'status'] },
+  { key: 'classAttendance', label: 'Class Attendance', group: 'Yoga Practice', icon: 'checkmark-done-outline', doctorScope: true,
+    access: { admin: 'rcud', yogaTeacher: 'rcu', patient: 'r' },
+    fields: [P, D, text('classTitle', 'Class', { required: true }), date('classDate', 'Date', { required: true }),
+      sel('attendance', 'Attendance', ['Attended', 'Late', 'Cancelled', 'No-show']), area('notes', 'Notes')],
+    columns: ['patientId', 'classTitle', 'classDate', 'attendance'] },
+  { key: 'asanaLibrary', label: 'Pose & Sequence Library', group: 'Care Tools', icon: 'body-outline', doctorScope: true,
+    access: { admin: 'rcud', yogaTeacher: 'rcud' },
+    fields: [D, text('name', 'Pose / sequence name', { required: true }), text('sanskritName', 'Sanskrit name'),
+      sel('category', 'Category', ['Standing', 'Seated', 'Supine', 'Prone', 'Balance', 'Inversion', 'Twist', 'Backbend', 'Forward fold', 'Pranayama', 'Sequence']),
+      sel('level', 'Level', ['Gentle', 'Beginner', 'Intermediate', 'Advanced']), num('holdSeconds', 'Typical hold (sec)'),
+      area('benefits', 'Benefits'), area('cues', 'Alignment cues'), area('modifications', 'Modifications and props'), area('contraindications', 'Contraindications'), file('reference', 'Reference image')],
+    columns: ['name', 'sanskritName', 'category', 'level'] },
+
+  // ---------------------------------------------------------------- NATUROPATH: extended toolkit
+  { key: 'constitutionAssessments', label: 'Constitution Assessment', group: 'Naturopathy Care', icon: 'leaf-outline', doctorScope: true,
+    access: { admin: 'rcud', naturopath: 'rcu', patient: 'r' },
+    fields: [P, D, date('assessedOn', 'Assessment date', { required: true }),
+      sel('constitution', 'Constitution (Prakriti)', ['Vata', 'Pitta', 'Kapha', 'Vata-Pitta', 'Pitta-Kapha', 'Vata-Kapha', 'Tridoshic', 'Other']),
+      sel('digestionStrength', 'Digestive fire', ['Weak', 'Variable', 'Strong', 'Sluggish']), sel('sleepPattern', 'Sleep pattern', ['Light', 'Sound', 'Heavy', 'Disturbed']),
+      sel('temperature', 'Temperature tendency', ['Runs cold', 'Neutral', 'Runs hot']), text('skinHair', 'Skin and hair'), text('appetiteThirst', 'Appetite and thirst'),
+      area('mentalTendencies', 'Mental and emotional tendencies'), area('imbalances', 'Imbalances noted'), area('notes', 'Notes')],
+    columns: ['patientId', 'assessedOn', 'constitution', 'digestionStrength', 'sleepPattern'] },
+  { key: 'detoxPrograms', label: 'Detox & Cleansing Programs', group: 'Naturopathy Care', icon: 'leaf-outline', doctorScope: true,
+    access: { admin: 'rcud', naturopath: 'rcu', patient: 'r' },
+    fields: [P, D, text('title', 'Program name', { required: true }),
+      sel('type', 'Type', ['Juice / liquid', 'Mono-diet', 'Elimination diet', 'Intermittent fasting', 'Herbal cleanse', 'Gentle reset', 'Other']),
+      date('startDate', 'Start date', { required: true }), num('durationDays', 'Duration (days)'), area('protocol', 'Daily protocol'),
+      area('contraindications', 'Screening and contraindications'), area('warningSigns', 'Stop and call us if'), area('outcome', 'Outcome'),
+      sel('status', 'Status', ['Draft', 'Active', 'Completed', 'On hold'], { default: 'Active' })],
+    columns: ['patientId', 'title', 'type', 'durationDays', 'status'] },
+  { key: 'herbalPrescriptions', label: 'Herbal & Remedy Prescriptions', group: 'Naturopathy Care', icon: 'medkit-outline', doctorScope: true,
+    access: { admin: 'rcud', naturopath: 'rcu', patient: 'r' },
+    fields: [P, D, text('title', 'Remedy', { required: true }), sel('form', 'Form', ['Tea / infusion', 'Decoction', 'Tincture', 'Capsule', 'Powder', 'Oil', 'Poultice', 'Flower remedy', 'Other']),
+      text('dosage', 'Dosage'), text('frequency', 'Frequency'), text('duration', 'Duration'), area('instructions', 'Preparation and instructions'),
+      area('cautions', 'Cautions and interactions'), date('startDate', 'Start date', { required: true }), sel('status', 'Status', ['Draft', 'Active', 'Completed', 'On hold'], { default: 'Active' })],
+    columns: ['patientId', 'title', 'form', 'dosage', 'status'] },
+  { key: 'hydrotherapyRecords', label: 'Hydrotherapy & Bodywork Records', group: 'Naturopathy Care', icon: 'bandage-outline', doctorScope: true,
+    access: { admin: 'rcud', naturopath: 'rcu', patient: 'r' },
+    fields: [P, D, date('sessionDate', 'Date', { required: true }),
+      sel('treatment', 'Treatment', ['Hip bath', 'Steam bath', 'Mud pack', 'Wet sheet pack', 'Contrast bath', 'Foot bath', 'Spinal bath', 'Enema', 'Massage', 'Acupressure', 'Other']),
+      num('waterTempC', 'Water / pack temperature (°C)'), num('durationMinutes', 'Duration (minutes)'), text('bpBefore', 'BP before'), text('bpAfter', 'BP after'),
+      sel('tolerance', 'Tolerance', ['Well tolerated', 'Mild discomfort', 'Stopped early']), area('notes', 'Notes')],
+    columns: ['patientId', 'sessionDate', 'treatment', 'durationMinutes', 'tolerance'] },
+  { key: 'symptomLogs', label: 'Symptom Tracker', group: 'Naturopathy Care', icon: 'journal-outline', doctorScope: true,
+    access: { admin: 'rcud', naturopath: 'rcu', patient: 'rc' },
+    fields: [P, D, date('logDate', 'Date', { required: true }), text('symptom', 'Main symptom', { required: true }), num('severity', 'Severity (1-10)', { min: 1, max: 10 }),
+      num('sleepHours', 'Sleep (hours)'), sel('energy', 'Energy', ['Low', 'Moderate', 'Good']), sel('mood', 'Mood', ['Low', 'Okay', 'Good']),
+      sel('digestion', 'Digestion', ['Needs attention', 'Fair', 'Good']), text('possibleTrigger', 'Possible trigger'), area('notes', 'Notes')],
+    columns: ['patientId', 'logDate', 'symptom', 'severity', 'energy'] },
+  { key: 'eliminationDiary', label: 'Elimination & Reintroduction Diary', group: 'Naturopathy Care', icon: 'restaurant-outline', doctorScope: true,
+    access: { admin: 'rcud', naturopath: 'rcu', patient: 'rc' },
+    fields: [P, D, date('logDate', 'Date', { required: true }), sel('phase', 'Phase', ['Elimination', 'Reintroduction', 'Maintenance']),
+      text('food', 'Food tested / removed', { required: true }), sel('reaction', 'Reaction', ['None', 'Mild', 'Moderate', 'Strong']), text('symptoms', 'Symptoms'), area('notes', 'Notes')],
+    columns: ['patientId', 'logDate', 'phase', 'food', 'reaction'] },
+
+  // ---------------------------------------------------------------- SHARED PRACTICE TOOLS (nutritionist, yoga teacher, naturopath, doctor)
+  { key: 'sessionPackages', label: 'Packages & Memberships', group: 'Billing', icon: 'wallet-outline', doctorScope: true,
+    access: { admin: 'rcud', ...forSpecialists('rcu'), patient: 'r' }, ranges: [['startDate', 'validUntil']],
+    fields: [P, D, text('packageName', 'Package', { required: true }), date('startDate', 'Start date', { required: true }), date('validUntil', 'Valid until'),
+      num('totalSessions', 'Sessions included', { required: true }), num('sessionsUsed', 'Sessions used'), num('sessionsRemaining', 'Sessions remaining (auto)', { computed: true }),
+      num('amount', 'Amount'), sel('paymentStatus', 'Payment', ['Unpaid', 'Partial', 'Paid']),
+      sel('status', 'Status', ['Active', 'Completed', 'Cancelled'], { default: 'Active' }), area('notes', 'Notes')],
+    columns: ['patientId', 'packageName', 'totalSessions', 'sessionsRemaining', 'validUntil', 'status'] },
+  // Written by providers, delivered by the sendClientMessage Cloud Function (WhatsApp / email via Resend).
+  { key: 'outbox', label: 'Send WhatsApp / Email', group: 'Communication', icon: 'send-outline', doctorScope: true,
+    access: { admin: 'rcud', doctor: 'rc', ...forSpecialists('rc') },
+    fields: [P, D, sel('channel', 'Send via', ['WhatsApp', 'Email', 'WhatsApp + Email'], { required: true, default: 'WhatsApp + Email' }), text('subject', 'Subject (email)'),
+      area('message', 'Message', { required: true }),
+      sel('status', 'Delivery status', ['Queued', 'Sent', 'Partial', 'Failed'], { default: 'Queued', roles: ['admin'] }), text('deliveryNote', 'Delivery note', { roles: ['admin'] })],
+    columns: ['patientId', 'channel', 'subject', 'status'] },
+
   // ---------------------------------------------------------------- CARE TOOLS (doctor)
   { key: 'schedules', label: 'My Schedule', group: 'Care Tools', icon: 'calendar-number-outline', ranges: [['startTime', 'endTime']], doctorRead: 'all',
     access: { admin: 'rcud', doctor: 'rcud', patient: 'r' },
@@ -264,7 +413,7 @@ export const MODULES = [
 
   // ---------------------------------------------------------------- BILLING
   { key: 'invoices', label: 'Invoices', group: 'Billing', icon: 'receipt-outline',
-    access: { admin: 'rcud', patient: 'r' },
+    access: { admin: 'rcud', ...forSpecialists('rcu'), patient: 'r' },
     fields: [P, text('invoiceNo', 'Invoice no.', { required: true }), date('date', 'Date', { required: true }), area('items', 'Line items'),
       num('subtotal', 'Subtotal'), num('tax', 'Tax'), num('discount', 'Discount'), num('total', 'Total', { required: true, computed: true }),
       sel('status', 'Status', ['Unpaid', 'Partial', 'Paid', 'Refunded', 'Cancelled'], { default: 'Unpaid' }),
@@ -387,15 +536,15 @@ export const MODULES = [
 
   // ---------------------------------------------------------------- COMMUNICATION
   { key: 'announcements', label: 'Announcements', group: 'Communication', icon: 'megaphone-outline',
-    access: { admin: 'rcud', doctor: 'r', patient: 'r' },
+    access: { admin: 'rcud', doctor: 'r', ...forSpecialists('r'), patient: 'r' },
     fields: [text('title', 'Title', { required: true }), area('body', 'Message', { required: true }),
       sel('audience', 'Audience', ['All', 'Doctors', 'Patients', 'Staff']), date('publishOn', 'Publish on')],
     columns: ['title', 'audience', 'publishOn'] },
 
   { key: 'messages', label: 'Secure Messages', group: 'Communication', icon: 'chatbubbles-outline', doctorScope: true, doctorRead: 'own',
-    access: { admin: 'r', doctor: 'rc', patient: 'rc' },
+    access: { admin: 'r', doctor: 'rc', ...forSpecialists('rc'), patient: 'rc' },
     patientCreate: "request.resource.data.fromRole == 'patient'",
-    doctorCreate: "request.resource.data.fromRole == 'doctor'",
+    doctorCreate: "request.resource.data.fromRole in ['doctor', 'nutritionist', 'yogaTeacher', 'naturopath']",
     fields: [P, D, { name: 'fromRole', label: 'From', type: 'text', selfRole: true },
       area('body', 'Message', { required: true })],
     columns: ['patientId', 'doctorId', 'fromRole', 'body'] },
@@ -404,10 +553,14 @@ export const MODULES = [
 
   // ---------------------------------------------------------------- ADMINISTRATION
   { key: 'settings', label: 'Clinic Settings', group: 'Administration', icon: 'settings-outline',
-    access: { admin: 'rcu', doctor: 'r', patient: 'r' },
+    access: { admin: 'rcu', doctor: 'r', ...forSpecialists('r'), patient: 'r' },
     fields: [text('clinicName', 'Clinic name', { required: true }), area('address', 'Address'), text('phone', 'Phone'), text('email', 'Email'),
       text('website', 'Website'), text('workingHours', 'Working hours'), text('currency', 'Currency'), text('taxId', 'GSTIN / tax id'),
-      num('slotMinutes', 'Default slot length (min)'), check('autoSendDocuments', 'Auto-send new documents to patients by WhatsApp and email'), file('logo', 'Logo')],
+      num('slotMinutes', 'Default slot length (min)'), check('autoSendDocuments', 'Auto-send new documents to patients by WhatsApp and email', { default: true }),
+      check('autoSendAppointmentAlerts', 'Auto-send booking, confirmation, reschedule and cancellation alerts', { default: true }),
+      check('autoSendReminders', 'Auto-send appointment reminders', { default: true }), num('reminderHoursBefore', 'Reminder lead time (hours)', { min: 1, max: 72 }),
+      check('autoSendLogNudges', 'Daily nudge to log meals / practice / symptoms for clients on an active plan', { default: true }),
+      check('autoSendWelcome', 'Send a welcome message to new patients', { default: true }), file('logo', 'Logo')],
     columns: ['clinicName', 'phone', 'workingHours'] },
   { key: 'auditLogs', label: 'Audit Logs', group: 'Administration', icon: 'list-outline',
     access: { admin: 'r' },
@@ -504,8 +657,18 @@ export function validateValues(m, role, v) {
 
 // Auto-calculated fields (invoice total = subtotal + tax - discount).
 export function applyComputed(m, v) {
-  if (m.key !== 'invoices') return v;
   const n = (x) => Number(x) || 0;
+  if (['nutritionAssessments', 'bodyMetrics'].includes(m.key)) {
+    const out = { ...v }, kg = n(v.weightKg), cm = n(v.heightCm);
+    if (kg > 0 && cm > 0) out.bmi = Math.round((kg / ((cm / 100) ** 2)) * 10) / 10;
+    if (m.key === 'bodyMetrics' && n(v.waistCm) > 0 && n(v.hipCm) > 0) out.waistHipRatio = Math.round((n(v.waistCm) / n(v.hipCm)) * 100) / 100;
+    return out;
+  }
+  if (m.key === 'sessionPackages') {
+    if (v.totalSessions === undefined || v.totalSessions === '') return v;
+    return { ...v, sessionsRemaining: Math.max(0, n(v.totalSessions) - n(v.sessionsUsed)) };
+  }
+  if (m.key !== 'invoices') return v;
   if (![v.subtotal, v.tax, v.discount].some((x) => x !== undefined && x !== null && x !== '')) return v;
   return { ...v, total: Math.max(0, Math.round((n(v.subtotal) + n(v.tax) - n(v.discount)) * 100) / 100) };
 }
@@ -565,7 +728,7 @@ export const buildTimeline = (data) => Object.entries(data)
   .sort((a, b) => b.when - a.when);
 
 // ---- printable documents (web: window.print, mobile: expo-print)
-export const PRINTABLE = ['invoices', 'payments', 'creditNotes', 'prescriptions', 'labResults', 'radiology', 'consultations', 'admissions', 'referrals'];
+export const PRINTABLE = ['nutritionPlans', 'supplementPlans', 'yogaPrograms', 'mindfulnessPlans', 'naturopathyPlans', 'detoxPrograms', 'herbalPrescriptions', 'sessionPackages', 'invoices', 'payments', 'creditNotes', 'prescriptions', 'labResults', 'radiology', 'consultations', 'admissions', 'referrals'];
 const esc = (x) => String(x ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export function printableHtml(m, row, clinic = {}) {
   const val = (f) => {
@@ -594,10 +757,11 @@ export const MENU = {
     ['Insights', ['analytics', 'timeline']],
     ['People', ['patients', 'doctors', 'users']],
     ['Front desk', ['appointments', 'queue', 'schedules', 'leaves', 'telemedicine']],
-    ['Clinical oversight', ['consultations', 'prescriptions', 'labOrders', 'labResults', 'radiology', 'admissions', 'procedures', 'referrals', 'followUps', 'documents', 'vitals', 'immunizations', 'allergies', 'medicalHistory', 'nutritionAssessments', 'nutritionPlans', 'mealLogs', 'yogaPrograms', 'yogaSessions', 'practiceLogs', 'naturopathyAssessments', 'naturopathyPlans', 'therapySessions']],
-    ['Billing', ['invoices', 'payments', 'creditNotes', 'insuranceClaims', 'insurancePolicies', 'services', 'expenses']],
+    ['Clinical oversight', ['consultations', 'prescriptions', 'labOrders', 'labResults', 'radiology', 'admissions', 'procedures', 'referrals', 'followUps', 'documents', 'vitals', 'immunizations', 'allergies', 'medicalHistory', 'nutritionAssessments', 'bodyMetrics', 'nutritionLabs', 'foodSensitivities', 'nutritionGoals', 'nutritionPlans', 'supplementPlans', 'mealLogs', 'yogaAssessments', 'yogaProgress', 'yogaPrograms', 'mindfulnessPlans', 'yogaSessions', 'classAttendance', 'practiceLogs', 'naturopathyAssessments', 'constitutionAssessments', 'naturopathyPlans', 'detoxPrograms', 'herbalPrescriptions', 'hydrotherapyRecords', 'therapySessions', 'symptomLogs', 'eliminationDiary']],
+    ['Billing', ['invoices', 'payments', 'sessionPackages', 'creditNotes', 'insuranceClaims', 'insurancePolicies', 'services', 'expenses']],
+    ['Wellness libraries', ['mealTemplates', 'asanaLibrary', 'groupClasses']],
     ['Operations', ['staff', 'shifts', 'attendance', 'departments', 'branches', 'rooms', 'inventory', 'pharmacy', 'suppliers', 'purchaseOrders', 'equipment']],
-    ['Communication', ['announcements', 'messages', 'tickets', 'feedback', 'dataRequests', 'consents']],
+    ['Communication', ['announcements', 'messages', 'outbox', 'tickets', 'feedback', 'dataRequests', 'consents']],
     ['Administration', ['settings', 'commLogs', 'auditLogs']],
   ],
   doctor: [
@@ -605,25 +769,33 @@ export const MENU = {
     ['My day', ['appointments', 'queue', 'telemedicine', 'followUps', 'schedules', 'leaves']],
     ['Patients', ['patients', 'consultations', 'prescriptions', 'rxTemplates', 'vitals', 'allergies', 'medicalHistory', 'immunizations']],
     ['Orders & referrals', ['labOrders', 'labResults', 'radiology', 'procedures', 'referrals', 'admissions', 'documents']],
-    ['Communication', ['messages', 'announcements']],
+    ['Communication', ['messages', 'outbox', 'announcements']],
   ],
   nutritionist: [
     ['My Clients', ['patients']],
-    ['Nutrition Care', ['appointments', 'nutritionAssessments', 'nutritionPlans', 'mealLogs']],
+    ['Assessment & tracking', ['nutritionAssessments', 'bodyMetrics', 'nutritionLabs', 'foodSensitivities', 'nutritionGoals']],
+    ['Nutrition Care', ['appointments', 'nutritionPlans', 'supplementPlans', 'mealLogs', 'mealTemplates']],
+    ['Practice', ['sessionPackages', 'invoices', 'followUps', 'documents', 'messages', 'outbox', 'announcements']],
   ],
   yogaTeacher: [
     ['My Clients', ['patients']],
-    ['Yoga Practice', ['appointments', 'yogaPrograms', 'yogaSessions', 'practiceLogs']],
+    ['Assessment & tracking', ['yogaAssessments', 'yogaProgress']],
+    ['Yoga Practice', ['appointments', 'yogaPrograms', 'mindfulnessPlans', 'yogaSessions', 'practiceLogs']],
+    ['Classes', ['groupClasses', 'classAttendance', 'asanaLibrary']],
+    ['Practice', ['sessionPackages', 'invoices', 'followUps', 'documents', 'messages', 'outbox', 'announcements']],
   ],
   naturopath: [
     ['My Clients', ['patients']],
-    ['Naturopathy Care', ['appointments', 'naturopathyAssessments', 'naturopathyPlans', 'therapySessions']],
+    ['Assessment & tracking', ['naturopathyAssessments', 'constitutionAssessments', 'symptomLogs', 'eliminationDiary']],
+    ['Naturopathy Care', ['appointments', 'naturopathyPlans', 'detoxPrograms', 'herbalPrescriptions', 'hydrotherapyRecords', 'therapySessions']],
+    ['Practice', ['sessionPackages', 'invoices', 'followUps', 'documents', 'messages', 'outbox', 'announcements']],
   ],
   patient: [
     ['Appointments', ['appointments', 'doctors', 'telemedicine', 'followUps']],
     ['My records', ['consultations', 'prescriptions', 'labResults', 'radiology', 'procedures', 'referrals', 'admissions', 'documents']],
     ['My health', ['vitals', 'medReminders', 'allergies', 'medicalHistory', 'immunizations', 'familyMembers']],
     ['Billing & insurance', ['invoices', 'payments', 'creditNotes', 'insuranceClaims', 'insurancePolicies']],
+    ['My wellness care', ['nutritionPlans', 'supplementPlans', 'nutritionGoals', 'bodyMetrics', 'mealLogs', 'yogaPrograms', 'mindfulnessPlans', 'groupClasses', 'yogaProgress', 'practiceLogs', 'naturopathyPlans', 'detoxPrograms', 'herbalPrescriptions', 'symptomLogs', 'eliminationDiary', 'sessionPackages']],
     ['Help & privacy', ['messages', 'announcements', 'feedback', 'tickets', 'consents', 'dataRequests']],
   ],
 };

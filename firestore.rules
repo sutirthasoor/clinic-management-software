@@ -214,11 +214,20 @@ service cloud.firestore {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
         || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
-        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid;
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid;
       allow update: if isAdmin()
-        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
       allow delete: if isAdmin();
     }
 
@@ -226,9 +235,15 @@ service cloud.firestore {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
         || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
         || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid
         || isPatient() && request.resource.data.patientId == request.auth.uid;
       allow update: if isAdmin()
         || isPatient() && resource.data.patientId == request.auth.uid && request.resource.data.patientId == request.auth.uid;
@@ -355,6 +370,271 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /bodyMetrics/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid
+        || isPatient() && request.resource.data.patientId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /nutritionLabs/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /foodSensitivities/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /supplementPlans/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /nutritionGoals/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /mealTemplates/{id} {
+      allow read: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid;
+    }
+
+    match /yogaAssessments/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /yogaProgress/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /mindfulnessPlans/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /groupClasses/{id} {
+      allow read: if isAdmin()
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || isPatient();
+      allow create: if isAdmin()
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin()
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid;
+    }
+
+    match /classAttendance/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /asanaLibrary/{id} {
+      allow read: if isAdmin()
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin()
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid;
+    }
+
+    match /constitutionAssessments/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /detoxPrograms/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /herbalPrescriptions/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /hydrotherapyRecords/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /symptomLogs/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid
+        || isPatient() && request.resource.data.patientId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /eliminationDiary/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid
+        || isPatient() && request.resource.data.patientId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /sessionPackages/{id} {
+      allow read: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
+        || isPatient() && resource.data.patientId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /outbox/{id} {
+      allow read: if isAdmin()
+        || hasRole('doctor') && resource.data.doctorId == request.auth.uid
+        || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid;
+      allow create: if isAdmin()
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid && request.resource.data.get('status', 'Queued') == 'Queued'
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid && request.resource.data.get('status', 'Queued') == 'Queued'
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid && request.resource.data.get('status', 'Queued') == 'Queued'
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid && request.resource.data.get('status', 'Queued') == 'Queued';
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     match /schedules/{id} {
       allow read: if isAdmin()
         || hasRole('doctor')
@@ -436,9 +716,18 @@ service cloud.firestore {
 
     match /invoices/{id} {
       allow read: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
-      allow create: if isAdmin();
-      allow update: if isAdmin();
+      allow create: if isAdmin()
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid;
+      allow update: if isAdmin()
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid && request.resource.data.doctorId == request.auth.uid;
       allow delete: if isAdmin();
     }
 
@@ -613,6 +902,9 @@ service cloud.firestore {
     match /announcements/{id} {
       allow read: if isAdmin()
         || hasRole('doctor')
+        || hasRole('nutritionist')
+        || hasRole('yogaTeacher')
+        || hasRole('naturopath')
         || isPatient();
       allow create: if isAdmin();
       allow update: if isAdmin();
@@ -623,9 +915,15 @@ service cloud.firestore {
       allow read: if isAdmin()
         || hasRole('doctor') && resource.data.doctorId == request.auth.uid
         || hasRole('doctor') && isMyPatient(resource.data.patientId)
+        || hasRole('nutritionist') && resource.data.doctorId == request.auth.uid
+        || hasRole('yogaTeacher') && resource.data.doctorId == request.auth.uid
+        || hasRole('naturopath') && resource.data.doctorId == request.auth.uid
         || isPatient() && resource.data.patientId == request.auth.uid;
       allow create: if isAdmin()
-        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid && request.resource.data.fromRole == 'doctor'
+        || hasRole('doctor') && request.resource.data.doctorId == request.auth.uid && request.resource.data.fromRole in ['doctor', 'nutritionist', 'yogaTeacher', 'naturopath']
+        || hasRole('nutritionist') && request.resource.data.doctorId == request.auth.uid && request.resource.data.fromRole in ['doctor', 'nutritionist', 'yogaTeacher', 'naturopath']
+        || hasRole('yogaTeacher') && request.resource.data.doctorId == request.auth.uid && request.resource.data.fromRole in ['doctor', 'nutritionist', 'yogaTeacher', 'naturopath']
+        || hasRole('naturopath') && request.resource.data.doctorId == request.auth.uid && request.resource.data.fromRole in ['doctor', 'nutritionist', 'yogaTeacher', 'naturopath']
         || isPatient() && request.resource.data.patientId == request.auth.uid && request.resource.data.fromRole == 'patient';
       allow update: if isAdmin();
       allow delete: if isAdmin();
@@ -634,6 +932,9 @@ service cloud.firestore {
     match /settings/{id} {
       allow read: if isAdmin()
         || hasRole('doctor')
+        || hasRole('nutritionist')
+        || hasRole('yogaTeacher')
+        || hasRole('naturopath')
         || isPatient();
       allow create: if isAdmin();
       allow update: if isAdmin();

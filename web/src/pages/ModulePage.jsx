@@ -157,7 +157,7 @@ export default function ModulePage() {
                 {cols.map((c) => <td key={c.name}>{cell(r, c)}</td>)}
                 <td>{r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString() : ''}</td>
                 <td className="row-actions" onClick={(e) => e.stopPropagation()}>
-                  {m.key === 'patients' && (role === 'admin' || role === 'doctor') && <Link className="link" to={`/chart/${r.id}`}>Chart</Link>}
+                  {m.key === 'patients' && (role === 'admin' || isProviderRole(role)) && <Link className="link" to={`/chart/${r.id}`}>Chart</Link>}
                   {printable && <button className="link" onClick={() => printRow(r)}>Print</button>}
                   {m.key === 'patients' && r.phone && <a className="link" href={`https://wa.me/${String(r.phone).replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${r.name || 'there'}, this is your clinic.`)}`} target="_blank" rel="noreferrer">WhatsApp</a>}
                   {m.key === 'patients' && r.email && <a className="link" href={`mailto:${r.email}?subject=${encodeURIComponent('Message from your clinic')}`}>Email</a>}

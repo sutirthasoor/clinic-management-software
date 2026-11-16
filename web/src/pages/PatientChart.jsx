@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import { chartModules } from '../config/modules';
+import { chartModules, isProviderRole } from '../config/modules';
 import { can, cellValue, colName, fmt, logAudit } from '../lib/data';
 
 // Full-body view of one patient: every health record any provider has written for them (clinical, nutrition, yoga, naturopathy, documents).
@@ -32,7 +32,7 @@ export default function PatientChart() {
     getDoc(doc(db, 'users', pid)).then((s) => setPatient(s.exists() ? { id: s.id, ...s.data() } : null)).catch((e) => setErr(e.message));
     Promise.all(mods.map(async (m) => {
       try {
-        const s = await getDocs(query(collection(db, colName(m)), where('patientId', '==', pid), limit(200)));
+        const s = await getDocs(query(collection(db, colName(m)), where('patientId', '==', pid), ...(isProviderRole(role) && role !== 'doctor' && m.fields.some((f) => f.name === 'doctorId') ? [where('doctorId', '==', user.uid)] : []), limit(200)));
         return [m.key, s.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))];
       } catch { return [m.key, null]; }
     })).then((r) => { setData(Object.fromEntries(r)); setBusy(false); logAudit(profile, 'view patient chart', 'users', pid); });

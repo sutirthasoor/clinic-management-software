@@ -12,9 +12,9 @@ const M = (k) => MODULES.find((x) => x.key === k);
 const KEYS = {
   admin: ['appointments', 'patients', 'payments', 'invoices', ...ALERT_SOURCES],
   doctor: ['appointments', 'queue', 'followUps', 'labResults', 'patients'],
-  nutritionist: ['appointments', 'patients', 'nutritionAssessments', 'nutritionPlans', 'mealLogs'],
-  yogaTeacher: ['appointments', 'patients', 'yogaPrograms', 'yogaSessions', 'practiceLogs'],
-  naturopath: ['appointments', 'patients', 'naturopathyAssessments', 'naturopathyPlans', 'therapySessions'],
+  nutritionist: ['appointments', 'patients', 'nutritionAssessments', 'nutritionPlans', 'mealLogs', 'bodyMetrics', 'supplementPlans', 'nutritionGoals', 'sessionPackages', 'followUps'],
+  yogaTeacher: ['appointments', 'patients', 'yogaPrograms', 'yogaSessions', 'practiceLogs', 'yogaAssessments', 'mindfulnessPlans', 'groupClasses', 'classAttendance', 'sessionPackages', 'followUps'],
+  naturopath: ['appointments', 'patients', 'naturopathyAssessments', 'naturopathyPlans', 'therapySessions', 'detoxPrograms', 'herbalPrescriptions', 'hydrotherapyRecords', 'symptomLogs', 'sessionPackages', 'followUps'],
   patient: ['appointments', 'invoices', 'medReminders', 'followUps', 'immunizations', 'prescriptions'],
 };
 
@@ -105,21 +105,22 @@ export default function Dashboard() {
       )}
 
       {isProviderRole(role) && role !== 'doctor' && (() => {
+        const pkgLow = (d.sessionPackages || []).filter((p) => p.status === 'Active' && (Number(p.sessionsRemaining) <= 1 || (p.validUntil && daysFromNow(p.validUntil) <= 7))).length;
         const configs = {
           nutritionist: {
             title: 'Nutrition sessions',
-            stats: [stat(todays.length, "Today's sessions", '/m/appointments'), stat((d.nutritionPlans || []).filter((p) => p.status === 'Active').length, 'Active nutrition plans', '/m/nutritionPlans'), stat((d.nutritionAssessments || []).length, 'Client assessments', '/m/nutritionAssessments'), stat((d.mealLogs || []).length, 'Meal & hydration logs', '/m/mealLogs')],
-            modules: [['nutritionAssessments', 'Nutrition assessments'], ['nutritionPlans', 'Nutrition plans'], ['mealLogs', 'Meal & hydration logs']],
+            stats: [stat(todays.length, "Today's sessions", '/m/appointments'), stat((d.nutritionPlans || []).filter((p) => p.status === 'Active').length, 'Active nutrition plans', '/m/nutritionPlans'), stat((d.nutritionAssessments || []).length, 'Client assessments', '/m/nutritionAssessments'), stat((d.mealLogs || []).length, 'Meal & hydration logs', '/m/mealLogs'), stat((d.nutritionGoals || []).filter((g) => g.status === 'Active').length, 'Active goals', '/m/nutritionGoals'), stat((d.supplementPlans || []).filter((p) => p.status === 'Active').length, 'Active supplement plans', '/m/supplementPlans'), stat(pkgLow, 'Packages ending soon', '/m/sessionPackages')],
+            modules: [['nutritionAssessments', 'Nutrition assessments'], ['bodyMetrics', 'Body measurements'], ['nutritionPlans', 'Nutrition plans'], ['supplementPlans', 'Supplement plans'], ['nutritionGoals', 'Goals & progress'], ['mealLogs', 'Meal & hydration logs'], ['sessionPackages', 'Packages & memberships'], ['followUps', 'Follow-ups']],
           },
           yogaTeacher: {
             title: 'Yoga sessions',
-            stats: [stat(todays.length, "Today's sessions", '/m/appointments'), stat((d.yogaPrograms || []).filter((p) => p.status === 'Active').length, 'Active yoga programs', '/m/yogaPrograms'), stat((d.yogaSessions || []).length, 'Session notes', '/m/yogaSessions'), stat((d.practiceLogs || []).length, 'Home practice logs', '/m/practiceLogs')],
-            modules: [['yogaPrograms', 'Yoga programs'], ['yogaSessions', 'Session notes'], ['practiceLogs', 'Home practice logs']],
+            stats: [stat(todays.length, "Today's sessions", '/m/appointments'), stat((d.yogaPrograms || []).filter((p) => p.status === 'Active').length, 'Active yoga programs', '/m/yogaPrograms'), stat((d.yogaSessions || []).length, 'Session notes', '/m/yogaSessions'), stat((d.practiceLogs || []).length, 'Home practice logs', '/m/practiceLogs'), stat((d.groupClasses || []).filter((c) => c.status === 'Active').length, 'Active group classes', '/m/groupClasses'), stat((d.classAttendance || []).filter((a) => a.attendance === 'Attended').length, 'Class check-ins', '/m/classAttendance'), stat(pkgLow, 'Packages ending soon', '/m/sessionPackages')],
+            modules: [['yogaAssessments', 'Intake & screening'], ['yogaPrograms', 'Yoga programs'], ['mindfulnessPlans', 'Pranayama & meditation'], ['yogaSessions', 'Session notes'], ['groupClasses', 'Class schedule'], ['classAttendance', 'Class attendance'], ['practiceLogs', 'Home practice logs'], ['sessionPackages', 'Packages & memberships']],
           },
           naturopath: {
             title: 'Naturopathy sessions',
-            stats: [stat(todays.length, "Today's sessions", '/m/appointments'), stat((d.naturopathyPlans || []).filter((p) => p.status === 'Active').length, 'Active wellness plans', '/m/naturopathyPlans'), stat((d.naturopathyAssessments || []).length, 'Wellness assessments', '/m/naturopathyAssessments'), stat((d.therapySessions || []).length, 'Therapy session notes', '/m/therapySessions')],
-            modules: [['naturopathyAssessments', 'Wellness assessments'], ['naturopathyPlans', 'Natural wellness plans'], ['therapySessions', 'Therapy session notes']],
+            stats: [stat(todays.length, "Today's sessions", '/m/appointments'), stat((d.naturopathyPlans || []).filter((p) => p.status === 'Active').length, 'Active wellness plans', '/m/naturopathyPlans'), stat((d.naturopathyAssessments || []).length, 'Wellness assessments', '/m/naturopathyAssessments'), stat((d.therapySessions || []).length, 'Therapy session notes', '/m/therapySessions'), stat((d.detoxPrograms || []).filter((p) => p.status === 'Active').length, 'Active detox programs', '/m/detoxPrograms'), stat((d.herbalPrescriptions || []).filter((p) => p.status === 'Active').length, 'Active remedies', '/m/herbalPrescriptions'), stat((d.symptomLogs || []).filter((l) => Number(l.severity) >= 8).length, 'High-severity symptom logs', '/m/symptomLogs')],
+            modules: [['naturopathyAssessments', 'Wellness assessments'], ['naturopathyPlans', 'Natural wellness plans'], ['detoxPrograms', 'Detox programs'], ['herbalPrescriptions', 'Herbal & remedies'], ['hydrotherapyRecords', 'Hydrotherapy records'], ['therapySessions', 'Therapy session notes'], ['symptomLogs', 'Symptom tracker'], ['sessionPackages', 'Packages & memberships']],
           },
         }[role];
         return configs && <>

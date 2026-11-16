@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useAuth } from '../context/AuthContext';
-import { menuFor } from '../config/modules';
+import { isProviderRole, menuFor } from '../config/modules';
 import { navIcon } from '../lib/icons';
 import Toaster from './Toaster';
 import { toast } from '../lib/data';
@@ -32,7 +32,7 @@ export default function Layout() {
   const [q, setQ] = useState('');
   const timer = useRef();
   const groups = menuFor(role);
-  const canChart = role === 'admin' || role === 'doctor';
+  const canChart = role === 'admin' || isProviderRole(role);
 
   useEffect(() => { applyTheme(theme); }, [theme]);
   useEffect(() => { localStorage.setItem('sbMode', mode); }, [mode]);
